@@ -37,6 +37,7 @@ func transform(row db.SightingListRow) (sighting.Sighting, error) {
 			StateProvince: r.StateProvince,
 			Country:       r.Country,
 			CountryCode:   country.Code(r.CountryCode),
+			Continent:     r.Continent,
 			Coordinates: sighting.Coordinates{
 				Latitude:  r.Latitude,
 				Longitude: r.Longitude,
@@ -58,6 +59,8 @@ func transform(row db.SightingListRow) (sighting.Sighting, error) {
 			ScientificName: sp.ScientificName,
 			CanonicalName:  sp.CanonicalName,
 			VernacularName: sp.VernacularName,
+			GenusKey:       int(sp.GenusKey),
+			IUCNCategory:   species.IUCNCategory(sp.IucnCategory),
 			CreatedAt:      sp.CreatedAt,
 			UpdatedAt:      sp.UpdatedAt,
 		},
@@ -87,9 +90,16 @@ func transform(row db.SightingListRow) (sighting.Sighting, error) {
 			CreatedAt:  w.CreatedAt,
 			UpdatedAt:  w.UpdatedAt,
 		},
-		Media:     media,
-		CreatedAt: r.CreatedAt,
-		UpdatedAt: r.UpdatedAt,
+		Media: media,
+		Organism: sighting.Organism{
+			Sex:       r.Sex,
+			LifeStage: r.LifeStage,
+			Behaviour: r.Behaviour,
+		},
+		IdentifiedBy: r.IdentifiedBy,
+		DatasetName:  r.DatasetName,
+		CreatedAt:    r.CreatedAt,
+		UpdatedAt:    r.UpdatedAt,
 	}, nil
 }
 
@@ -124,5 +134,11 @@ func toSightingCreateParams(id uuid.UUID, in sighting.CreateParams) (db.Sighting
 		SpeciesID:                     in.SpeciesID,
 		WeatherID:                     in.WeatherID,
 		Media:                         media,
+		Continent:                     in.Location.Continent,
+		Sex:                           in.Organism.Sex,
+		LifeStage:                     in.Organism.LifeStage,
+		Behaviour:                     in.Organism.Behaviour,
+		IdentifiedBy:                  in.IdentifiedBy,
+		DatasetName:                   in.DatasetName,
 	}, nil
 }

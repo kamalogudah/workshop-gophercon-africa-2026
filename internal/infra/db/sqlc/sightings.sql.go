@@ -33,8 +33,14 @@ INSERT INTO sightings (
 	elevation_in_metres,
 	species_id,
 	weather_id,
-	media
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id, created_at, updated_at, gbif_key, occurrence_id, happened_at, basis_of_record, recorded_by, individual_count, remarks, reference_url, locality, state_province, country, country_code, latitude, longitude, coordinate_uncertainty_in_metres, elevation_in_metres, species_id, weather_id, media
+	media,
+	continent,
+	sex,
+	life_stage,
+	behaviour,
+	identified_by,
+	dataset_name
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id, created_at, updated_at, gbif_key, occurrence_id, happened_at, basis_of_record, recorded_by, individual_count, remarks, reference_url, locality, state_province, country, country_code, latitude, longitude, coordinate_uncertainty_in_metres, elevation_in_metres, species_id, weather_id, media, continent, sex, life_stage, behaviour, identified_by, dataset_name
 `
 
 type SightingCreateParams struct {
@@ -58,6 +64,12 @@ type SightingCreateParams struct {
 	SpeciesID                     uuid.UUID `db:"species_id" json:"species_id"`
 	WeatherID                     uuid.UUID `db:"weather_id" json:"weather_id"`
 	Media                         string    `db:"media" json:"media"`
+	Continent                     string    `db:"continent" json:"continent"`
+	Sex                           string    `db:"sex" json:"sex"`
+	LifeStage                     string    `db:"life_stage" json:"life_stage"`
+	Behaviour                     string    `db:"behaviour" json:"behaviour"`
+	IdentifiedBy                  string    `db:"identified_by" json:"identified_by"`
+	DatasetName                   string    `db:"dataset_name" json:"dataset_name"`
 }
 
 func (q *Queries) SightingCreate(ctx context.Context, arg SightingCreateParams) (Sighting, error) {
@@ -82,6 +94,12 @@ func (q *Queries) SightingCreate(ctx context.Context, arg SightingCreateParams) 
 		arg.SpeciesID,
 		arg.WeatherID,
 		arg.Media,
+		arg.Continent,
+		arg.Sex,
+		arg.LifeStage,
+		arg.Behaviour,
+		arg.IdentifiedBy,
+		arg.DatasetName,
 	)
 	var i Sighting
 	err := row.Scan(
@@ -107,12 +125,53 @@ func (q *Queries) SightingCreate(ctx context.Context, arg SightingCreateParams) 
 		&i.SpeciesID,
 		&i.WeatherID,
 		&i.Media,
+		&i.Continent,
+		&i.Sex,
+		&i.LifeStage,
+		&i.Behaviour,
+		&i.IdentifiedBy,
+		&i.DatasetName,
 	)
 	return i, err
 }
 
+const sightingEnrich = `-- name: SightingEnrich :exec
+UPDATE sightings
+SET continent     = ?,
+	sex           = ?,
+	life_stage    = ?,
+	behaviour     = ?,
+	identified_by = ?,
+	dataset_name  = ?,
+	updated_at    = CURRENT_TIMESTAMP
+WHERE id = ?
+`
+
+type SightingEnrichParams struct {
+	Continent    string    `db:"continent" json:"continent"`
+	Sex          string    `db:"sex" json:"sex"`
+	LifeStage    string    `db:"life_stage" json:"life_stage"`
+	Behaviour    string    `db:"behaviour" json:"behaviour"`
+	IdentifiedBy string    `db:"identified_by" json:"identified_by"`
+	DatasetName  string    `db:"dataset_name" json:"dataset_name"`
+	ID           uuid.UUID `db:"id" json:"id"`
+}
+
+func (q *Queries) SightingEnrich(ctx context.Context, arg SightingEnrichParams) error {
+	_, err := q.db.ExecContext(ctx, sightingEnrich,
+		arg.Continent,
+		arg.Sex,
+		arg.LifeStage,
+		arg.Behaviour,
+		arg.IdentifiedBy,
+		arg.DatasetName,
+		arg.ID,
+	)
+	return err
+}
+
 const sightingFind = `-- name: SightingFind :one
-SELECT sightings.id, sightings.created_at, sightings.updated_at, sightings.gbif_key, sightings.occurrence_id, sightings.happened_at, sightings.basis_of_record, sightings.recorded_by, sightings.individual_count, sightings.remarks, sightings.reference_url, sightings.locality, sightings.state_province, sightings.country, sightings.country_code, sightings.latitude, sightings.longitude, sightings.coordinate_uncertainty_in_metres, sightings.elevation_in_metres, sightings.species_id, sightings.weather_id, sightings.media, species.id, species.created_at, species.updated_at, species.gbif_key, species.kingdom, species.phylum, species.class, species."order", species.family, species.genus, species.species, species.rank, species.scientific_name, species.canonical_name, species.vernacular_name, weather.id, weather.created_at, weather.updated_at, weather.observed_at, weather.temperature, weather.apparent_temperature, weather.humidity, weather.precipitation, weather.rain, weather.snowfall, weather.cloud_cover, weather.wind_speed, weather.wind_gusts, weather.wind_direction, weather.condition_code, weather.condition
+SELECT sightings.id, sightings.created_at, sightings.updated_at, sightings.gbif_key, sightings.occurrence_id, sightings.happened_at, sightings.basis_of_record, sightings.recorded_by, sightings.individual_count, sightings.remarks, sightings.reference_url, sightings.locality, sightings.state_province, sightings.country, sightings.country_code, sightings.latitude, sightings.longitude, sightings.coordinate_uncertainty_in_metres, sightings.elevation_in_metres, sightings.species_id, sightings.weather_id, sightings.media, sightings.continent, sightings.sex, sightings.life_stage, sightings.behaviour, sightings.identified_by, sightings.dataset_name, species.id, species.created_at, species.updated_at, species.gbif_key, species.kingdom, species.phylum, species.class, species."order", species.family, species.genus, species.species, species.rank, species.scientific_name, species.canonical_name, species.vernacular_name, species.genus_key, species.iucn_category, weather.id, weather.created_at, weather.updated_at, weather.observed_at, weather.temperature, weather.apparent_temperature, weather.humidity, weather.precipitation, weather.rain, weather.snowfall, weather.cloud_cover, weather.wind_speed, weather.wind_gusts, weather.wind_direction, weather.condition_code, weather.condition
 FROM sightings
 	JOIN species ON species.id = sightings.species_id
 	JOIN weather ON weather.id = sightings.weather_id
@@ -151,6 +210,12 @@ func (q *Queries) SightingFind(ctx context.Context, id uuid.UUID) (SightingFindR
 		&i.Sighting.SpeciesID,
 		&i.Sighting.WeatherID,
 		&i.Sighting.Media,
+		&i.Sighting.Continent,
+		&i.Sighting.Sex,
+		&i.Sighting.LifeStage,
+		&i.Sighting.Behaviour,
+		&i.Sighting.IdentifiedBy,
+		&i.Sighting.DatasetName,
 		&i.Species.ID,
 		&i.Species.CreatedAt,
 		&i.Species.UpdatedAt,
@@ -166,6 +231,8 @@ func (q *Queries) SightingFind(ctx context.Context, id uuid.UUID) (SightingFindR
 		&i.Species.ScientificName,
 		&i.Species.CanonicalName,
 		&i.Species.VernacularName,
+		&i.Species.GenusKey,
+		&i.Species.IucnCategory,
 		&i.Weather.ID,
 		&i.Weather.CreatedAt,
 		&i.Weather.UpdatedAt,
@@ -187,7 +254,7 @@ func (q *Queries) SightingFind(ctx context.Context, id uuid.UUID) (SightingFindR
 }
 
 const sightingFindByGbifKey = `-- name: SightingFindByGbifKey :one
-SELECT sightings.id, sightings.created_at, sightings.updated_at, sightings.gbif_key, sightings.occurrence_id, sightings.happened_at, sightings.basis_of_record, sightings.recorded_by, sightings.individual_count, sightings.remarks, sightings.reference_url, sightings.locality, sightings.state_province, sightings.country, sightings.country_code, sightings.latitude, sightings.longitude, sightings.coordinate_uncertainty_in_metres, sightings.elevation_in_metres, sightings.species_id, sightings.weather_id, sightings.media, species.id, species.created_at, species.updated_at, species.gbif_key, species.kingdom, species.phylum, species.class, species."order", species.family, species.genus, species.species, species.rank, species.scientific_name, species.canonical_name, species.vernacular_name, weather.id, weather.created_at, weather.updated_at, weather.observed_at, weather.temperature, weather.apparent_temperature, weather.humidity, weather.precipitation, weather.rain, weather.snowfall, weather.cloud_cover, weather.wind_speed, weather.wind_gusts, weather.wind_direction, weather.condition_code, weather.condition
+SELECT sightings.id, sightings.created_at, sightings.updated_at, sightings.gbif_key, sightings.occurrence_id, sightings.happened_at, sightings.basis_of_record, sightings.recorded_by, sightings.individual_count, sightings.remarks, sightings.reference_url, sightings.locality, sightings.state_province, sightings.country, sightings.country_code, sightings.latitude, sightings.longitude, sightings.coordinate_uncertainty_in_metres, sightings.elevation_in_metres, sightings.species_id, sightings.weather_id, sightings.media, sightings.continent, sightings.sex, sightings.life_stage, sightings.behaviour, sightings.identified_by, sightings.dataset_name, species.id, species.created_at, species.updated_at, species.gbif_key, species.kingdom, species.phylum, species.class, species."order", species.family, species.genus, species.species, species.rank, species.scientific_name, species.canonical_name, species.vernacular_name, species.genus_key, species.iucn_category, weather.id, weather.created_at, weather.updated_at, weather.observed_at, weather.temperature, weather.apparent_temperature, weather.humidity, weather.precipitation, weather.rain, weather.snowfall, weather.cloud_cover, weather.wind_speed, weather.wind_gusts, weather.wind_direction, weather.condition_code, weather.condition
 FROM sightings
 	JOIN species ON species.id = sightings.species_id
 	JOIN weather ON weather.id = sightings.weather_id
@@ -226,6 +293,12 @@ func (q *Queries) SightingFindByGbifKey(ctx context.Context, gbifKey int64) (Sig
 		&i.Sighting.SpeciesID,
 		&i.Sighting.WeatherID,
 		&i.Sighting.Media,
+		&i.Sighting.Continent,
+		&i.Sighting.Sex,
+		&i.Sighting.LifeStage,
+		&i.Sighting.Behaviour,
+		&i.Sighting.IdentifiedBy,
+		&i.Sighting.DatasetName,
 		&i.Species.ID,
 		&i.Species.CreatedAt,
 		&i.Species.UpdatedAt,
@@ -241,6 +314,8 @@ func (q *Queries) SightingFindByGbifKey(ctx context.Context, gbifKey int64) (Sig
 		&i.Species.ScientificName,
 		&i.Species.CanonicalName,
 		&i.Species.VernacularName,
+		&i.Species.GenusKey,
+		&i.Species.IucnCategory,
 		&i.Weather.ID,
 		&i.Weather.CreatedAt,
 		&i.Weather.UpdatedAt,
@@ -262,14 +337,16 @@ func (q *Queries) SightingFindByGbifKey(ctx context.Context, gbifKey int64) (Sig
 }
 
 const sightingList = `-- name: SightingList :many
-SELECT sightings.id, sightings.created_at, sightings.updated_at, sightings.gbif_key, sightings.occurrence_id, sightings.happened_at, sightings.basis_of_record, sightings.recorded_by, sightings.individual_count, sightings.remarks, sightings.reference_url, sightings.locality, sightings.state_province, sightings.country, sightings.country_code, sightings.latitude, sightings.longitude, sightings.coordinate_uncertainty_in_metres, sightings.elevation_in_metres, sightings.species_id, sightings.weather_id, sightings.media, species.id, species.created_at, species.updated_at, species.gbif_key, species.kingdom, species.phylum, species.class, species."order", species.family, species.genus, species.species, species.rank, species.scientific_name, species.canonical_name, species.vernacular_name, weather.id, weather.created_at, weather.updated_at, weather.observed_at, weather.temperature, weather.apparent_temperature, weather.humidity, weather.precipitation, weather.rain, weather.snowfall, weather.cloud_cover, weather.wind_speed, weather.wind_gusts, weather.wind_direction, weather.condition_code, weather.condition
+SELECT sightings.id, sightings.created_at, sightings.updated_at, sightings.gbif_key, sightings.occurrence_id, sightings.happened_at, sightings.basis_of_record, sightings.recorded_by, sightings.individual_count, sightings.remarks, sightings.reference_url, sightings.locality, sightings.state_province, sightings.country, sightings.country_code, sightings.latitude, sightings.longitude, sightings.coordinate_uncertainty_in_metres, sightings.elevation_in_metres, sightings.species_id, sightings.weather_id, sightings.media, sightings.continent, sightings.sex, sightings.life_stage, sightings.behaviour, sightings.identified_by, sightings.dataset_name, species.id, species.created_at, species.updated_at, species.gbif_key, species.kingdom, species.phylum, species.class, species."order", species.family, species.genus, species.species, species.rank, species.scientific_name, species.canonical_name, species.vernacular_name, species.genus_key, species.iucn_category, weather.id, weather.created_at, weather.updated_at, weather.observed_at, weather.temperature, weather.apparent_temperature, weather.humidity, weather.precipitation, weather.rain, weather.snowfall, weather.cloud_cover, weather.wind_speed, weather.wind_gusts, weather.wind_direction, weather.condition_code, weather.condition
 FROM sightings
 	JOIN species ON species.id = sightings.species_id
 	JOIN weather ON weather.id = sightings.weather_id
 WHERE (?1 IS NULL OR happened_at >= ?1)
 	AND (?2 IS NULL OR happened_at <= ?2)
 	AND (?3 = '' OR sightings.country_code = ?3)
-	AND (CAST(?4 AS BOOLEAN) OR species.gbif_key IN (SELECT value FROM json_each(?5)))
+	AND (CAST(?4 AS BOOLEAN)
+		OR species.gbif_key IN (SELECT value FROM json_each(?5))
+		OR species.genus_key IN (SELECT value FROM json_each(?5)))
 ORDER BY sightings.happened_at DESC, sightings.id DESC
 LIMIT ?6
 `
@@ -328,6 +405,12 @@ func (q *Queries) SightingList(ctx context.Context, arg SightingListParams) ([]S
 			&i.Sighting.SpeciesID,
 			&i.Sighting.WeatherID,
 			&i.Sighting.Media,
+			&i.Sighting.Continent,
+			&i.Sighting.Sex,
+			&i.Sighting.LifeStage,
+			&i.Sighting.Behaviour,
+			&i.Sighting.IdentifiedBy,
+			&i.Sighting.DatasetName,
 			&i.Species.ID,
 			&i.Species.CreatedAt,
 			&i.Species.UpdatedAt,
@@ -343,6 +426,8 @@ func (q *Queries) SightingList(ctx context.Context, arg SightingListParams) ([]S
 			&i.Species.ScientificName,
 			&i.Species.CanonicalName,
 			&i.Species.VernacularName,
+			&i.Species.GenusKey,
+			&i.Species.IucnCategory,
 			&i.Weather.ID,
 			&i.Weather.CreatedAt,
 			&i.Weather.UpdatedAt,
@@ -360,6 +445,44 @@ func (q *Queries) SightingList(ctx context.Context, arg SightingListParams) ([]S
 			&i.Weather.ConditionCode,
 			&i.Weather.Condition,
 		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const sightingListUnenriched = `-- name: SightingListUnenriched :many
+SELECT id, gbif_key, species_id
+FROM sightings
+WHERE continent = '' AND sex = '' AND life_stage = '' AND identified_by = '' AND dataset_name = ''
+ORDER BY happened_at DESC
+LIMIT ?1
+`
+
+type SightingListUnenrichedRow struct {
+	ID        uuid.UUID `db:"id" json:"id"`
+	GbifKey   int64     `db:"gbif_key" json:"gbif_key"`
+	SpeciesID uuid.UUID `db:"species_id" json:"species_id"`
+}
+
+// Sightings saved before 0003, or whose details GBIF left blank.
+func (q *Queries) SightingListUnenriched(ctx context.Context, limit int64) ([]SightingListUnenrichedRow, error) {
+	rows, err := q.db.QueryContext(ctx, sightingListUnenriched, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []SightingListUnenrichedRow{}
+	for rows.Next() {
+		var i SightingListUnenrichedRow
+		if err := rows.Scan(&i.ID, &i.GbifKey, &i.SpeciesID); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

@@ -21,6 +21,8 @@ type Store interface {
 	FindByGbifKey(ctx context.Context, gbifKey int) (Sighting, error)
 	List(ctx context.Context, filter ListFilter) ([]Sighting, error)
 	Create(ctx context.Context, id uuid.UUID, in CreateParams) (Sighting, error)
+	ListUnenriched(ctx context.Context, limit int) ([]Unenriched, error)
+	Enrich(ctx context.Context, id uuid.UUID, details Details) error
 }
 
 // Service is the entry point for working with sighting data.
@@ -59,6 +61,7 @@ func NewService(
 type SpeciesReadWriter interface {
 	FindByGbifKey(ctx context.Context, gbifKey int) (species.Species, error)
 	Create(ctx context.Context, params species.CreateParams) (species.Species, error)
+	Enrich(ctx context.Context, id uuid.UUID, details species.Details) error
 }
 
 // WeatherWriter is required by ingest to create weather records.

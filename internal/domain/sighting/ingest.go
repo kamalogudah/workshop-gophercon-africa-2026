@@ -197,6 +197,8 @@ func (s Service) speciesPerSighting(ctx context.Context, v gbif.Occurrence) (uui
 		ScientificName: gbifSpecies.ScientificName,
 		CanonicalName:  gbifSpecies.CanonicalName,
 		VernacularName: gbifSpecies.VernacularName,
+		GenusKey:       gbifSpecies.GenusKey,
+		IUCNCategory:   iucnCategory(v),
 	})
 	if err != nil {
 		return uuid.Nil(), err
@@ -280,10 +282,14 @@ func (s Service) saveSighting(ctx context.Context, v gbif.Occurrence, speciesID,
 			Coordinates:                   coordinates,
 			CoordinateUncertaintyInMetres: v.CoordinateUncertaintyInMeters,
 			ElevationInMetres:             v.Elevation,
+			Continent:                     v.Continent,
 		},
-		SpeciesID: speciesID,
-		WeatherID: weatherID,
-		Media:     mediaPerSighting(v),
+		SpeciesID:    speciesID,
+		WeatherID:    weatherID,
+		Media:        mediaPerSighting(v),
+		Organism:     organism(v),
+		IdentifiedBy: observers(v.IdentifiedBy),
+		DatasetName:  v.DatasetName,
 	})
 	if err != nil {
 		// A duplicate is expected on re-ingest, so the caller counts it

@@ -25,6 +25,16 @@ type OccurrencesSearchArgs struct {
 	TaxonKeys   []int
 }
 
+// Occurrence retrieves a single occurrence by its GBIF key.
+//
+// See: https://techdocs.gbif.org/en/openapi/v1/occurrence#/Occurrence/getOccurrenceById
+func (c Client) Occurrence(ctx context.Context, key int64) (Occurrence, error) {
+	return c.http.Do[Occurrence](ctx, httputil.Request{
+		Method: http.MethodGet,
+		Path:   "/occurrence/" + strconv.FormatInt(key, 10),
+	})
+}
+
 // Occurrences fetches GET /occurrence/search
 //
 // Obtains a collection of occurrences by search arguments.

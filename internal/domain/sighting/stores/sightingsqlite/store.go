@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"log/slog"
 	"uuid"
 	"workshop/internal/domain/sighting"
@@ -81,8 +80,7 @@ func (s Store) List(ctx context.Context, filter sighting.ListFilter) ([]sighting
 
 	result := make([]sighting.Sighting, len(rows))
 	for i, row := range rows {
-		msg := fmt.Sprintf("store: listing row %d of %v", i+1, rows)
-		slog.DebugContext(ctx, msg)
+		slog.DebugContext(ctx, "store: listing row", "row", i+1, "of", len(rows))
 		result[i], err = transform(row)
 		if err != nil {
 			return nil, err
@@ -113,5 +111,34 @@ func (s Store) Create(ctx context.Context, id uuid.UUID, in sighting.CreateParam
 		Sighting: row,
 		Species:  db.Species{ID: row.SpeciesID},
 		Weather:  db.Weather{ID: row.WeatherID},
+	})
+}
+
+// ListUnenriched returns up to limit sightings whose details are all
+// empty, newest first.
+func (s Store) ListUnenriched(ctx context.Context, limit int) ([]sighting.Unenriched, error) {
+	rows, err := s.queries.SightingListUnenriched(ctx, int64(limit))
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]sighting.Unenriched, len(rows))
+	for i, row := range rows {
+		result[i] = sighting.Unenriched{ID: row.ID, GBIFKey: row.GbifKey, SpeciesID: row.SpeciesID}
+	}
+
+	return result, nil
+}
+
+// Enrich saves the details of the sighting with id.
+func (s Store) Enrich(ctx context.Context, id uuid.UUID, d sighting.Details) error {
+	return s.queries.SightingEnrich(ctx, db.SightingEnrichParams{
+		Continent:    d.Continent,
+		Sex:          d.Organism.Sex,
+		LifeStage:    d.Organism.LifeStage,
+		Behaviour:    d.Organism.Behaviour,
+		IdentifiedBy: d.IdentifiedBy,
+		DatasetName:  d.DatasetName,
+		ID:           id,
 	})
 }

@@ -1,10 +1,12 @@
 package components
 
 import (
-	"cmp"
 	"workshop/internal/domain/sighting"
+	"workshop/web/views/format"
 )
 
+// Gallery shows a sighting's media. Photos open full size in the
+// lightbox; anything else links out.
 templ Gallery(items []sighting.Media) {
 	if len(items) == 0 {
 		<p class="gallery__empty">No media recorded.</p>
@@ -13,20 +15,39 @@ templ Gallery(items []sighting.Media) {
 			for _, m := range items {
 				<!-- Items -->
 				<li class="gallery__item">
-					if m.Type == "StillImage" {
-						<img src={ m.URL } alt={ altText(m) } loading="lazy"/>
-					} else {
-						<a href={ templ.URL(m.URL) } rel="noopener">{ altText(m) }</a>
-					}
-					if m.Creator != "" {
-						<figcaption class="gallery__credit">{ m.Creator }</figcaption>
-					}
+					<figure>
+						if m.Type == "StillImage" {
+							<button type="button" class="gallery__open" data-lightbox={ m.URL } data-caption={ caption(m) }>
+								<img src={ m.URL } alt={ format.AltText(m) } loading="lazy" decoding="async"/>
+							</button>
+						} else {
+							<a href={ templ.URL(m.URL) } rel="noopener">{ format.AltText(m) }</a>
+						}
+						if m.Creator != "" {
+							<figcaption class="gallery__credit">© { m.Creator }</figcaption>
+						}
+					</figure>
 				</li>
 			}
 		</ul>
 	}
 }
 
-func altText(m sighting.Media) string {
-	return cmp.Or(m.Title, m.Description, "Sighting media")
+// Lightbox is the dialog photos open in. One per page is enough.
+templ Lightbox() {
+	<dialog class="lightbox" id="lightbox" aria-label="Photo">
+		<form method="dialog">
+			<button class="lightbox__close" aria-label="Close">×</button>
+		</form>
+		<img class="lightbox__img" alt=""/>
+		<p class="lightbox__caption"></p>
+	</dialog>
+}
+
+// caption credits a photo in the lightbox.
+func caption(m sighting.Media) string {
+	if m.Creator == "" {
+		return format.AltText(m)
+	}
+	return format.AltText(m) + " · © " + m.Creator
 }

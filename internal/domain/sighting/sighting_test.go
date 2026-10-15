@@ -233,6 +233,23 @@ func TestService_List(t *testing.T) {
 		assert.Equal(t, int64(124), got[0].GBIFKey)
 	})
 
+	t.Run("Filters by an animal that names a genus", func(t *testing.T) {
+		ctx, svc, speciesSvc := setup(t, false, nil, nil)
+
+		// GBIF keeps Giraffa giraffa under its own key, so only its genus
+		// matches the giraffe.
+		params := lionParams()
+		params.GBIFKey = 8959277
+		params.GenusKey = species.AnimalGiraffe.TaxonKeys()[0]
+		giraffe, err := speciesSvc.Create(ctx, params)
+		require.NoError(t, err)
+		create(t, ctx, svc, newCreateParams(giraffe.ID, 123))
+
+		got, err := svc.List(ctx, sighting.ListFilter{Animals: []species.Animal{species.AnimalGiraffe}})
+		require.NoError(t, err)
+		assert.Len(t, got, 1)
+	})
+
 	t.Run("Filters by animal", func(t *testing.T) {
 		ctx, svc, speciesSvc := setup(t, false, nil, nil)
 		lion := seedLion(t, ctx, speciesSvc)

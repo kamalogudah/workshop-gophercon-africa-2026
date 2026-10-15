@@ -105,3 +105,33 @@ func TestAnimal_String(t *testing.T) {
 	t.Parallel()
 	assert.Equal(t, "humpback_whale", AnimalHumpbackWhale.String())
 }
+
+func TestAnimalOf(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Found", func(t *testing.T) {
+		t.Parallel()
+		got, ok := AnimalOf(2435349) // Loxodonta cyclotis
+		assert.True(t, ok)
+		assert.Equal(t, AnimalElephant, got)
+	})
+
+	t.Run("Prefers the narrower animal", func(t *testing.T) {
+		t.Parallel()
+		got, ok := AnimalOf(2441370) // Alligator mississippiensis
+		assert.True(t, ok)
+		assert.Equal(t, AnimalAmericanAlligator, got)
+	})
+
+	t.Run("Not found", func(t *testing.T) {
+		t.Parallel()
+		_, ok := AnimalOf(1)
+		assert.False(t, ok)
+	})
+}
+
+func TestAnimal_Name(t *testing.T) {
+	t.Parallel()
+	assert.Equal(t, "Spotted hyena", AnimalSpottedHyena.Name())
+	assert.Equal(t, "Lion", AnimalLion.Name())
+}

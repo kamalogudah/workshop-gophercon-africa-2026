@@ -20,7 +20,9 @@ FROM sightings
 WHERE (sqlc.narg('from_date') IS NULL OR happened_at >= sqlc.narg('from_date'))
 	AND (sqlc.narg('to_date') IS NULL OR happened_at <= sqlc.narg('to_date'))
 	AND (sqlc.arg('country_code') = '' OR sightings.country_code = sqlc.arg('country_code'))
-	AND (CAST(sqlc.arg('any_species') AS BOOLEAN) OR species.gbif_key IN (SELECT value FROM json_each(sqlc.arg('species_keys'))))
+	AND (CAST(sqlc.arg('any_species') AS BOOLEAN)
+		OR species.gbif_key IN (SELECT value FROM json_each(sqlc.arg('species_keys')))
+		OR species.genus_key IN (SELECT value FROM json_each(sqlc.arg('species_keys'))))
 ORDER BY sightings.happened_at DESC, sightings.id DESC
 LIMIT sqlc.arg('limit');
 
@@ -45,5 +47,30 @@ INSERT INTO sightings (
 	elevation_in_metres,
 	species_id,
 	weather_id,
-	media
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING *;
+	media,
+	continent,
+	sex,
+	life_stage,
+	behaviour,
+	identified_by,
+	dataset_name
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING *;
+
+-- name: SightingListUnenriched :many
+-- Sightings saved before 0003, or whose details GBIF left blank.
+SELECT id, gbif_key, species_id
+FROM sightings
+WHERE continent = '' AND sex = '' AND life_stage = '' AND identified_by = '' AND dataset_name = ''
+ORDER BY happened_at DESC
+LIMIT sqlc.arg('limit');
+
+-- name: SightingEnrich :exec
+UPDATE sightings
+SET continent     = ?,
+	sex           = ?,
+	life_stage    = ?,
+	behaviour     = ?,
+	identified_by = ?,
+	dataset_name  = ?,
+	updated_at    = CURRENT_TIMESTAMP
+WHERE id = ?;

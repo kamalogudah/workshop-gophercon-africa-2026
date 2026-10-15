@@ -1,0 +1,79 @@
+package pages
+
+import (
+	"fmt"
+	"strconv"
+	"workshop/web/views/format"
+	"workshop/web/views/layout"
+)
+
+templ Stats(props StatsProps) {
+	@layout.Base(layout.BaseProps{
+		Title:       "Statistics",
+		Description: "What's been seen, where, when and in what weather.",
+		Active:      "Stats",
+	}) {
+		<header class="page-head">
+			<h1>Statistics</h1>
+			if props.Summary.Sightings > 0 {
+				<p class="lede">
+					Across { format.Number(props.Summary.Sightings) } sightings,
+					from { format.Date(props.Summary.Earliest) } to { format.Date(props.Summary.Latest) }.
+				</p>
+			}
+		</header>
+		if props.Summary.Sightings == 0 {
+			<p class="empty">No sightings yet, so nothing to count.</p>
+		} else {
+			<ul class="figures figures--wide">
+				@figure(format.Number(props.Summary.Sightings), "sightings")
+				@figure(format.Number(props.Summary.Species), "species")
+				@figure(format.Number(props.Summary.Countries), "countries")
+				@figure(format.Number(props.Threatened), "threatened species")
+				@figure(format.Number(props.Summary.Individuals), "animals counted")
+				@figure(format.Number(props.Summary.Recorders), "recorders")
+				@figure(format.Number(props.Summary.Media), "photos")
+				@figure(fmt.Sprintf("%.1f°C", props.MeanTemperature), "mean temperature")
+			</ul>
+			<div class="charts">
+				for _, c := range props.Charts {
+					@chart(c)
+				}
+			</div>
+		}
+	}
+}
+
+templ chart(c Chart) {
+	if len(c.Bars) > 0 {
+		<section
+			class={ "chart", templ.KV("chart--columns", c.Columns) }
+			aria-label={ c.Title }
+		>
+			<h2>{ c.Title }</h2>
+			if c.Note != "" {
+				<p class="chart__note">{ c.Note }</p>
+			}
+			<ol class="bars">
+				for _, b := range c.Bars {
+					<li class="bar" style={ barStyle(b, c.Max()) } title={ b.Label + ": " + format.Number(b.Count) }>
+						<span class="bar__label">
+							if b.Href != "" {
+								<a href={ templ.SafeURL(b.Href) }>{ b.Label }</a>
+							} else {
+								{ b.Label }
+							}
+						</span>
+						<span class={ "bar__fill", templ.KV("badge--"+b.Tone, b.Tone != "") }></span>
+						<span class="bar__value">{ format.Number(b.Count) }</span>
+					</li>
+				}
+			</ol>
+		</section>
+	}
+}
+
+// barStyle sizes a bar as a share of the longest in its chart.
+func barStyle(b Bar, most int) templ.SafeCSS {
+	return templ.SafeCSS("--share: " + strconv.FormatFloat(float64(b.Count)/float64(most), 'f', 4, 64))
+}

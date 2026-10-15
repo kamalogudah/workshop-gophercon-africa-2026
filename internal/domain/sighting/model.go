@@ -26,6 +26,9 @@ type (
 		Species         species.Species `json:"species"`
 		Weather         weather.Weather `json:"weather"`
 		Media           []Media         `json:"media,omitzero"`
+		Organism        Organism        `json:"organism,omitzero"`
+		IdentifiedBy    string          `json:"identifiedBy,omitzero"`
+		DatasetName     string          `json:"datasetName,omitzero"`
 		CreatedAt       time.Time       `json:"createdAt"`
 		UpdatedAt       time.Time       `json:"updatedAt"`
 	}
@@ -36,6 +39,8 @@ type (
 		StateProvince string       `json:"stateProvince,omitzero"`
 		Country       string       `json:"country"`
 		CountryCode   country.Code `json:"countryCode"`
+		// Continent is GBIF's name for it, such as "NORTH_AMERICA".
+		Continent string `json:"continent,omitzero"`
 		// Coordinates is embedded, so a Location still reads as though it
 		// held a latitude and a longitude of its own.
 		Coordinates
@@ -48,6 +53,29 @@ type (
 	Coordinates struct {
 		Latitude  float64 `json:"latitude"`
 		Longitude float64 `json:"longitude"`
+	}
+	// Organism describes the animal itself, as far as the observer could
+	// tell. Each field is free text from GBIF, such as "Female" or
+	// "Juvenile", and most records leave them blank.
+	Organism struct {
+		Sex       string `json:"sex,omitzero"`
+		LifeStage string `json:"lifeStage,omitzero"`
+		Behaviour string `json:"behaviour,omitzero"`
+	}
+	// Details are the parts of an occurrence that were added to a
+	// sighting after it was first released, and so can be filled in for
+	// a sighting saved before then. See Service.Enrich.
+	Details struct {
+		Continent    string
+		Organism     Organism
+		IdentifiedBy string
+		DatasetName  string
+	}
+	// Unenriched points at a sighting whose details are still empty.
+	Unenriched struct {
+		ID        uuid.UUID
+		GBIFKey   int64
+		SpeciesID uuid.UUID
 	}
 	// CreateParams represents the parameters required to
 	// create a new sighting.
@@ -64,6 +92,9 @@ type (
 		SpeciesID       uuid.UUID `json:"speciesID,omitzero"`
 		WeatherID       uuid.UUID `json:"weatherID,omitzero"`
 		Media           []Media   `json:"media,omitzero"`
+		Organism        Organism  `json:"organism,omitzero"`
+		IdentifiedBy    string    `json:"identifiedBy,omitzero"`
+		DatasetName     string    `json:"datasetName,omitzero"`
 	}
 	// Media represents a media item associated with a sighting.
 	// This could be abstracted into its own domain type, but
@@ -97,7 +128,15 @@ func (s Sighting) CreateParams() CreateParams {
 		SpeciesID:       s.Species.ID,
 		WeatherID:       s.Weather.ID,
 		Media:           s.Media,
+		Organism:        s.Organism,
+		IdentifiedBy:    s.IdentifiedBy,
+		DatasetName:     s.DatasetName,
 	}
+}
+
+// IsZero reports whether the observer recorded nothing about the animal.
+func (o Organism) IsZero() bool {
+	return o == Organism{}
 }
 
 // ParseCoordinates returns the coordinates for a latitude and longitude, and

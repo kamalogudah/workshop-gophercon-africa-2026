@@ -8,20 +8,39 @@ import (
 
 templ Home(sightings []sighting.Sighting) {
 	@layout.Base(layout.BaseProps{
-		Title: "Sightings",
+		Title:       "Sightings",
+		Description: "Wildlife sightings from around the world, with the weather at the time.",
+		Active:      "Sightings",
 	}) {
-		<h1>Sightings</h1>
-		if len(sightings) == 0 {
-			<p>No sightings have been ingested yet.</p>
-		} else {
-			<p>Total: { len(sightings) }</p>
-			<ul class="sightings">
-				for _, s := range sightings {
-					<li>
-						@components.SightingCard(s)
-					</li>
-				}
-			</ul>
-		}
+		<section class="hero">
+			<div class="hero__grid" aria-hidden="true"></div>
+			<div class="hero__text">
+				<p class="eyebrow">Live feed · GBIF uplink</p>
+				<h1 class="glitch-jolt"><span class="glitch" data-text="Every animal, everywhere it's been seen.">Every animal, everywhere it's been seen.</span></h1>
+				<p class="lede">
+					Lions in the Mara, humpbacks off Cape Town, penguins on the ice. Each sighting is a real record,
+					with the weather in the hour it happened.
+				</p>
+				<div class="hero__actions">
+					<a class="button" href="/map">Explore the map</a>
+					<a class="button button--ghost" href="/stats">See the numbers</a>
+				</div>
+			</div>
+			<div class="globe" aria-hidden="true">
+				<canvas class="globe__canvas" data-globe="/api/points"></canvas>
+				<p class="globe__hint">Drag to spin</p>
+			</div>
+		</section>
+		<section aria-labelledby="latest">
+			<div class="section-head">
+				<h2 id="latest">Latest sightings</h2>
+				<a href="/gallery">Browse the gallery →</a>
+			</div>
+			if len(sightings) == 0 {
+				<p class="empty">No sightings have been ingested yet. Run <code>go run . db seed</code> to fetch some.</p>
+			} else {
+				@components.SightingGrid(sightings)
+			}
+		</section>
 	}
 }

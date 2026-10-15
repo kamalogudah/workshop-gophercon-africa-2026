@@ -13,6 +13,7 @@ import (
 func (s *Store) Handler() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /gbif/v1/occurrence/search", s.handleSearch)
+	mux.HandleFunc("GET /gbif/v1/occurrence/{key}", s.handleOccurrence)
 	mux.HandleFunc("GET /gbif/v1/species/{key}", s.handleSpecies)
 	mux.HandleFunc("GET /gbif/v1/species/{key}/media", s.handleMedia)
 	mux.HandleFunc("/gbif/", func(w http.ResponseWriter, r *http.Request) {
@@ -73,6 +74,19 @@ func (s *Store) handleSearch(w http.ResponseWriter, r *http.Request) {
 		Results:      results,
 		Facets:       []any{},
 	})
+}
+
+// handleOccurrence mocks GET /occurrence/{key}.
+func (s *Store) handleOccurrence(w http.ResponseWriter, r *http.Request) {
+	raw, err := s.raw(r, "SELECT raw FROM occurrences WHERE key = ?")
+	switch {
+	case errors.Is(err, sql.ErrNoRows):
+		writeError(w, http.StatusNotFound, "Entity not found for uri: /occurrence/"+r.PathValue("key"))
+	case err != nil:
+		writeError(w, http.StatusInternalServerError, err.Error())
+	default:
+		httputil.WriteRawJSON(w, raw)
+	}
 }
 
 // handleSpecies mocks GET /species/{key}.

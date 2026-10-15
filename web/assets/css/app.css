@@ -1,13 +1,65 @@
+/* ==========================================================================
+   Tokens: change these to retheme the whole site.
+   Neon city at night: matrix green and alert red on black. Dark only.
+   ========================================================================== */
+
+:root {
+	--bg: #000000;
+	--surface: #0c130e;
+	--surface-2: #121c15;
+	--text: #e0e0e0;
+	--muted: #94a3b8;
+	--line: #1f3326;
+	--accent: #00ff41;
+	--accent-ink: #000000;
+	--accent-2: #ff3333;
+	--glow: 0 0 6px rgb(0 255 65 / 0.55), 0 0 18px rgb(0 255 65 / 0.3);
+	--glow-red: 0 0 6px rgb(255 51 51 / 0.6), 0 0 18px rgb(255 51 51 / 0.3);
+	--shadow: 0 0 0 1px rgb(0 255 65 / 0.06), 0 8px 24px rgb(0 0 0 / 0.6);
+	--shadow-lift: 0 0 0 1px var(--accent), 0 0 24px rgb(0 255 65 / 0.35), 0 16px 48px rgb(0 0 0 / 0.8);
+	--radius: 2px;
+	--radius-sm: 2px;
+	--cut: 14px;
+	--font: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+	--font-display: "Orbitron", "JetBrains Mono", ui-monospace, sans-serif;
+
+	/* One colour per kind of animal, shared by the map, globe and legend. */
+	--mammals: #00ff41;
+	--birds: #00e5ff;
+	--reptiles: #f5f500;
+	--sharks: #ff3333;
+	--other: #94a3b8;
+
+	/* IUCN Red List colours. */
+	--iucn-ex: #000;
+	--iucn-ew: #542344;
+	--iucn-cr: #d81e05;
+	--iucn-en: #fc7f3f;
+	--iucn-vu: #f9c80e;
+	--iucn-nt: #b8d335;
+	--iucn-lc: #60c659;
+	--iucn-dd: #a0a0a0;
+
+	color-scheme: dark;
+}
+
+/* ==========================================================================
+   Base
+   ========================================================================== */
+
 * {
 	box-sizing: border-box;
 }
 
+html {
+	-webkit-text-size-adjust: 100%;
+}
+
 body {
 	margin: 0;
-	padding: 30px;
-	background: #fff;
-	color: #0a0a0a;
-	font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+	background: var(--bg);
+	color: var(--text);
+	font: 16px/1.6 var(--font);
 }
 
 img {
@@ -16,66 +68,838 @@ img {
 	height: auto;
 }
 
+a {
+	color: var(--accent);
+	text-underline-offset: 3px;
+}
+
+h1,
+h2,
+h3 {
+	font-family: var(--font-display);
+	line-height: 1.15;
+	letter-spacing: -0.01em;
+}
+
+h1 {
+	font-size: clamp(2rem, 4.5vw, 3.25rem);
+	margin: 0 0 12px;
+}
+
+h2 {
+	font-size: 1.35rem;
+	margin: 0 0 12px;
+}
+
+code {
+	background: var(--surface-2);
+	padding: 2px 6px;
+	border-radius: 6px;
+	font-size: 0.9em;
+}
+
+.container {
+	max-width: 1240px;
+	margin: 0 auto;
+	padding: 24px 16px 64px;
+}
+
+@media (min-width: 720px) {
+	.container {
+		padding: 32px 32px 80px;
+	}
+}
+
+.visually-hidden {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+}
+
+.skip-link {
+	position: absolute;
+	left: 16px;
+	top: -100px;
+	background: var(--accent);
+	color: var(--accent-ink);
+	padding: 8px 16px;
+	border-radius: var(--radius-sm);
+	z-index: 1000;
+}
+
+.skip-link:focus {
+	top: 12px;
+}
+
+:focus-visible {
+	outline: 3px solid var(--accent);
+	outline-offset: 2px;
+}
+
+.muted,
+.empty {
+	color: var(--muted);
+}
+
+.eyebrow {
+	margin: 0 0 8px;
+	color: var(--accent);
+	font-size: 0.8rem;
+	font-weight: 700;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+}
+
+.lede {
+	font-size: 1.125rem;
+	color: var(--muted);
+	max-width: 60ch;
+	margin: 0;
+}
+
+/* ==========================================================================
+   Header, nav and footer
+   ========================================================================== */
+
+.site-header {
+	position: sticky;
+	top: 0;
+	z-index: 900;
+	background: color-mix(in srgb, var(--bg) 82%, transparent);
+	backdrop-filter: blur(12px);
+	border-bottom: 1px solid var(--line);
+}
+
+.site-header__inner {
+	max-width: 1240px;
+	margin: 0 auto;
+	padding: 12px 16px;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px 24px;
+}
+
+.brand {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-family: var(--font-display);
+	font-size: 1.25rem;
+	font-weight: 700;
+	color: var(--text);
+	text-decoration: none;
+}
+
+.brand__mark {
+	display: inline-grid;
+	place-items: center;
+	width: 34px;
+	height: 34px;
+	border-radius: 50%;
+	background: var(--accent);
+	font-size: 1rem;
+}
+
+.site-nav {
+	display: flex;
+	gap: 4px;
+	overflow-x: auto;
+	scrollbar-width: none;
+	margin-left: auto;
+	max-width: 100%;
+}
+
+.site-nav a {
+	padding: 6px 12px;
+	border-radius: 999px;
+	color: var(--muted);
+	text-decoration: none;
+	font-weight: 500;
+	white-space: nowrap;
+}
+
+.site-nav a:hover {
+	color: var(--text);
+	background: var(--surface-2);
+}
+
+.site-nav a[aria-current="page"] {
+	color: var(--accent-ink);
+	background: var(--accent);
+}
+
+@media (max-width: 720px) {
+	.site-nav {
+		margin-left: 0;
+		width: 100%;
+	}
+}
+
+.site-footer {
+	border-top: 1px solid var(--line);
+	color: var(--muted);
+	font-size: 0.875rem;
+	padding: 24px 16px 40px;
+	text-align: center;
+}
+
+.site-footer p {
+	max-width: 70ch;
+	margin: 0 auto;
+}
+
+.site-footer a {
+	color: inherit;
+}
+
+/* ==========================================================================
+   Buttons, tags, badges
+   ========================================================================== */
+
+.button {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 12px 20px;
+	border: 1px solid var(--accent);
+	border-radius: 999px;
+	background: var(--accent);
+	color: var(--accent-ink);
+	font: inherit;
+	font-weight: 600;
+	text-decoration: none;
+	cursor: pointer;
+	transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.button:hover {
+	transform: translateY(-2px);
+	box-shadow: var(--shadow);
+}
+
+.button--ghost {
+	background: transparent;
+	color: var(--accent);
+}
+
+.button--small {
+	padding: 6px 14px;
+	font-size: 0.875rem;
+}
+
+.tag {
+	display: inline-block;
+	padding: 2px 10px;
+	border-radius: 999px;
+	background: var(--surface-2);
+	color: var(--muted);
+	font-size: 0.75rem;
+	font-weight: 600;
+}
+
+.badge {
+	display: inline-flex;
+	align-items: center;
+	padding: 3px 10px;
+	border-radius: 999px;
+	font-size: 0.75rem;
+	font-weight: 700;
+	white-space: nowrap;
+	background: var(--iucn-dd);
+	color: #fff;
+}
+
+.badge--EX { background: var(--iucn-ex); }
+.badge--EW { background: var(--iucn-ew); }
+.badge--CR { background: var(--iucn-cr); }
+.badge--EN { background: var(--iucn-en); color: #1a0f05; }
+.badge--VU { background: var(--iucn-vu); color: #1a0f05; }
+.badge--NT { background: var(--iucn-nt); color: #1a0f05; }
+.badge--LC { background: var(--iucn-lc); color: #0d2a0b; }
+.badge--DD,
+.badge--NE { background: var(--iucn-dd); }
+
+/* ==========================================================================
+   Home hero and the globe
+   ========================================================================== */
+
+.hero {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	align-items: center;
+	gap: 24px;
+	margin-bottom: 48px;
+}
+
+@media (min-width: 900px) {
+	.hero {
+		grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+		min-height: 520px;
+	}
+}
+
+.hero__actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	margin-top: 28px;
+}
+
+.globe {
+	position: relative;
+	aspect-ratio: 1;
+	width: min(100%, 520px);
+	justify-self: center;
+}
+
+.globe::before {
+	/* A soft halo, so the globe glows against the page. */
+	content: "";
+	position: absolute;
+	inset: 6%;
+	border-radius: 50%;
+	background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--accent) 30%, transparent), transparent 70%);
+	filter: blur(30px);
+}
+
+.globe__canvas {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	cursor: grab;
+	touch-action: none;
+}
+
+.globe__canvas:active {
+	cursor: grabbing;
+}
+
+.globe__hint {
+	position: absolute;
+	bottom: 0;
+	width: 100%;
+	text-align: center;
+	color: var(--muted);
+	font-size: 0.8rem;
+	margin: 0;
+}
+
+/* ==========================================================================
+   Sections, page heads, breadcrumbs, figures
+   ========================================================================== */
+
+.section-head {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 16px;
+	margin: 40px 0 16px;
+}
+
+.section-head h2 {
+	margin: 0;
+}
+
+.page-head {
+	margin-bottom: 28px;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 8px;
+}
+
+.page-head--row {
+	flex-direction: row;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	align-items: flex-end;
+	gap: 16px;
+}
+
+.breadcrumbs {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	color: var(--muted);
+	font-size: 0.875rem;
+	margin-bottom: 16px;
+}
+
+.breadcrumbs a {
+	color: var(--muted);
+}
+
+.figures {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+	gap: 12px;
+	padding: 0;
+	margin: 0 0 24px;
+	list-style: none;
+}
+
+.figure {
+	display: flex;
+	flex-direction: column;
+	padding: 16px 18px;
+	background: var(--surface);
+	border: 1px solid var(--line);
+	border-radius: var(--radius);
+}
+
+.figure__value {
+	font-family: var(--font-display);
+	font-size: 1.75rem;
+	font-weight: 700;
+	line-height: 1.1;
+}
+
+.figure__label {
+	color: var(--muted);
+	font-size: 0.875rem;
+}
+
+/* ==========================================================================
+   Sighting cards
+   ========================================================================== */
+
 .sightings {
 	display: grid;
-	gap: 40px;
+	grid-template-columns: repeat(auto-fill, minmax(min(100%, 270px), 1fr));
+	gap: 24px;
 	padding: 0;
+	margin: 0;
 	list-style: none;
 }
 
 .card {
+	height: 100%;
+	border-radius: var(--radius);
+	background: var(--surface);
+	border: 1px solid var(--line);
+	box-shadow: var(--shadow);
+	overflow: hidden;
+}
+
+.card__link {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	color: inherit;
+	text-decoration: none;
+}
+
+.card__photo {
+	position: relative;
+	aspect-ratio: 4 / 3;
+	background: var(--surface-2);
+	overflow: hidden;
+}
+
+.card__photo img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	transition: transform 0.5s ease;
+}
+
+.card:hover .card__photo img {
+	transform: scale(1.06);
+}
+
+.card__placeholder {
 	display: grid;
-	grid-template-columns: 320px 1fr;
-	grid-template-rows: auto 1fr;
-	gap: 0 24px;
+	place-items: center;
+	height: 100%;
+	font-size: 3rem;
+	opacity: 0.3;
 }
 
-.card__gallery {
-	grid-column: 1;
-	grid-row: 1 / span 2;
+.card__count {
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	padding: 2px 8px;
+	border-radius: 999px;
+	background: rgb(0 0 0 / 0.6);
+	color: #fff;
+	font-size: 0.75rem;
+	font-weight: 600;
 }
 
-.card__header,
-.card__meta {
-	grid-column: 2;
+.weather-chip {
+	position: absolute;
+	left: 10px;
+	bottom: 10px;
+	display: inline-flex;
+	gap: 6px;
+	align-items: center;
+	padding: 4px 10px;
+	border-radius: 999px;
+	background: rgb(255 255 255 / 0.88);
+	color: #1f1b14;
+	font-size: 0.8rem;
+	font-weight: 700;
+	backdrop-filter: blur(6px);
 }
 
-@media (max-width: 640px) {
-	.card {
-		grid-template-columns: 1fr;
-	}
-
-	.card__gallery,
-	.card__header,
-	.card__meta {
-		grid-column: 1;
-		grid-row: auto;
-	}
+.card__header {
+	padding: 16px 18px 0;
 }
 
-.card h2,
-.card p {
-	margin: 0 0 8px;
+.card h2 {
+	font-size: 1.2rem;
+	margin: 0 0 2px;
+}
+
+.card__scientific {
+	margin: 0;
+	color: var(--muted);
+	font-style: italic;
+	font-size: 0.875rem;
 }
 
 .card__meta {
 	display: grid;
 	grid-template-columns: auto 1fr;
-	align-content: start;
-	gap: 4px 12px;
-	margin: 0;
+	gap: 2px 12px;
+	margin: 12px 0 0;
+	padding: 0 18px;
+	font-size: 0.875rem;
+}
+
+.card__meta dt {
+	color: var(--muted);
 }
 
 .card__meta dd {
 	margin: 0;
 }
 
+.card__footer {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin-top: auto;
+	padding: 14px 18px 18px;
+}
+
+/* ==========================================================================
+   3D: tilt and glare. app.js sets --rx, --ry and the glare's position
+   from the pointer; without JS, or with reduced motion, nothing moves.
+   ========================================================================== */
+
+[data-tilt] {
+	--rx: 0deg;
+	--ry: 0deg;
+	--gx: 50%;
+	--gy: 50%;
+	--glare: 0;
+	position: relative;
+	transform: perspective(900px) rotateX(var(--rx)) rotateY(var(--ry));
+	transform-style: preserve-3d;
+	transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.4s ease;
+	will-change: transform;
+}
+
+[data-tilt].is-tilting {
+	transition: transform 0.08s linear, box-shadow 0.3s ease;
+	box-shadow: var(--shadow-lift);
+}
+
+[data-tilt]::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	border-radius: inherit;
+	pointer-events: none;
+	background: radial-gradient(circle at var(--gx) var(--gy), rgb(255 255 255 / 0.35), transparent 55%);
+	opacity: var(--glare);
+	transition: opacity 0.3s ease;
+	mix-blend-mode: soft-light;
+}
+
+/* The card's header floats above its photo as it tilts. */
+.card .card__header,
+.tile .tile__body {
+	transform: translateZ(28px);
+}
+
+/* ==========================================================================
+   Sighting detail
+   ========================================================================== */
+
+.detail-head {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	justify-content: space-between;
+	gap: 16px;
+	margin-bottom: 28px;
+}
+
+.scientific {
+	margin: 0;
+	color: var(--muted);
+	font-style: italic;
+	font-size: 1.1rem;
+}
+
+.detail {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	gap: 32px;
+}
+
+@media (min-width: 960px) {
+	.detail {
+		grid-template-columns: minmax(0, 1.6fr) minmax(300px, 1fr);
+	}
+}
+
+.detail__main {
+	display: grid;
+	gap: 36px;
+	align-content: start;
+}
+
+.detail__side {
+	display: grid;
+	gap: 24px;
+	align-content: start;
+}
+
+.remarks blockquote {
+	margin: 0;
+	padding: 16px 20px;
+	border-left: 4px solid var(--accent);
+	background: var(--surface);
+	border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+	font-style: italic;
+}
+
+.minimap {
+	height: 320px;
+	border-radius: var(--radius);
+	border: 1px solid var(--line);
+	overflow: hidden;
+	z-index: 0;
+}
+
+.taxonomy {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	padding: 0;
+	margin: 0;
+	list-style: none;
+}
+
+.taxonomy li {
+	padding: 6px 12px;
+	border-radius: var(--radius-sm);
+	background: var(--surface);
+	border: 1px solid var(--line);
+	font-size: 0.9rem;
+}
+
+.taxonomy li span {
+	display: block;
+	color: var(--muted);
+	font-size: 0.7rem;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+}
+
+.facts {
+	padding: 20px;
+	background: var(--surface);
+	border: 1px solid var(--line);
+	border-radius: var(--radius);
+}
+
+.facts dl {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	gap: 6px 16px;
+	margin: 0;
+	font-size: 0.925rem;
+}
+
+.facts dt {
+	color: var(--muted);
+}
+
+.facts dd {
+	margin: 0;
+	overflow-wrap: anywhere;
+}
+
+.facts__links {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 16px;
+	margin: 16px 0 0;
+}
+
+.more {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+/* ==========================================================================
+   Weather: a card that flips in 3D
+   ========================================================================== */
+
+.flip {
+	perspective: 1000px;
+	cursor: pointer;
+	border-radius: var(--radius);
+}
+
+.flip__inner {
+	display: grid;
+	transition: transform 0.7s cubic-bezier(0.3, 0.7, 0.2, 1);
+	transform-style: preserve-3d;
+}
+
+.flip.is-flipped .flip__inner {
+	transform: rotateY(180deg);
+}
+
+@media (hover: hover) {
+	.flip:hover .flip__inner {
+		transform: rotateY(180deg);
+	}
+
+	.flip.is-flipped:hover .flip__inner {
+		transform: rotateY(0deg);
+	}
+}
+
+.flip__face {
+	grid-area: 1 / 1;
+	padding: 24px;
+	border-radius: var(--radius);
+	backface-visibility: hidden;
+	min-height: 260px;
+}
+
+.flip__front {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	color: #fff;
+	background: linear-gradient(145deg, #1d5f8a, #3fa0c9 55%, #f3b25c);
+	box-shadow: var(--shadow);
+}
+
+.flip__back {
+	transform: rotateY(180deg);
+	background: var(--surface);
+	border: 1px solid var(--line);
+}
+
+.weather__icon {
+	font-size: 3.5rem;
+	line-height: 1;
+	filter: drop-shadow(0 6px 12px rgb(0 0 0 / 0.25));
+	transform: translateZ(40px);
+}
+
+.weather__temp {
+	font-family: var(--font-display);
+	font-size: 3rem;
+	font-weight: 700;
+	margin: 8px 0 0;
+	line-height: 1;
+}
+
+.weather__condition {
+	margin: 4px 0 0;
+	font-weight: 600;
+}
+
+.weather__feels,
+.flip__hint {
+	margin: 4px 0 0;
+	opacity: 0.85;
+	font-size: 0.875rem;
+}
+
+.flip__hint {
+	margin-top: 12px;
+	font-size: 0.75rem;
+	text-transform: uppercase;
+	letter-spacing: 0.1em;
+}
+
+.readings {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	gap: 8px 16px;
+	margin: 0;
+}
+
+.readings dt {
+	color: var(--muted);
+}
+
+.readings dd {
+	margin: 0;
+	font-weight: 600;
+}
+
+.compass {
+	display: inline-block;
+	color: var(--accent);
+	transform: rotate(var(--to, 0deg));
+}
+
+.weather__note {
+	color: var(--muted);
+	font-size: 0.8rem;
+	margin: 8px 0 0;
+}
+
+/* ==========================================================================
+   Gallery (a sighting's photos) and the lightbox
+   ========================================================================== */
+
 .gallery {
 	display: grid;
-	gap: 16px;
+	grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+	gap: 12px;
 	margin: 0;
 	padding: 0;
 	list-style: none;
+}
+
+.gallery figure {
+	margin: 0;
+}
+
+.gallery__item:first-child {
+	grid-column: 1 / -1;
+}
+
+.gallery__open,
+.masonry__open {
+	display: block;
+	width: 100%;
+	padding: 0;
+	border: 0;
+	background: none;
+	cursor: zoom-in;
+	border-radius: var(--radius-sm);
+	overflow: hidden;
 }
 
 .gallery img {
@@ -84,6 +908,998 @@ img {
 	object-fit: cover;
 }
 
+.gallery__item:first-child img {
+	aspect-ratio: 16 / 9;
+}
+
 .gallery__credit {
-	font-size: 12px;
+	color: var(--muted);
+	font-size: 0.75rem;
+	margin-top: 4px;
+}
+
+.gallery__empty {
+	padding: 48px;
+	text-align: center;
+	color: var(--muted);
+	background: var(--surface);
+	border: 1px dashed var(--line);
+	border-radius: var(--radius);
+}
+
+.lightbox {
+	max-width: min(1100px, 94vw);
+	max-height: 92vh;
+	padding: 0;
+	border: 0;
+	border-radius: var(--radius);
+	background: #000;
+	color: #fff;
+	overflow: hidden;
+}
+
+.lightbox::backdrop {
+	background: rgb(0 0 0 / 0.85);
+	backdrop-filter: blur(4px);
+}
+
+.lightbox[open] {
+	animation: zoom-in 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.lightbox__img {
+	max-height: 82vh;
+	margin: 0 auto;
+	object-fit: contain;
+}
+
+.lightbox__caption {
+	margin: 0;
+	padding: 10px 16px;
+	font-size: 0.875rem;
+}
+
+.lightbox__close {
+	position: absolute;
+	top: 8px;
+	right: 8px;
+	width: 40px;
+	height: 40px;
+	border: 0;
+	border-radius: 50%;
+	background: rgb(0 0 0 / 0.6);
+	color: #fff;
+	font-size: 1.5rem;
+	cursor: pointer;
+}
+
+@keyframes zoom-in {
+	from {
+		opacity: 0;
+		transform: perspective(800px) rotateX(12deg) scale(0.9);
+	}
+}
+
+/* ==========================================================================
+   Gallery page: a masonry of photos
+   ========================================================================== */
+
+.masonry {
+	columns: 4 260px;
+	column-gap: 16px;
+	padding: 0;
+	margin: 0;
+	list-style: none;
+}
+
+.masonry__item {
+	break-inside: avoid;
+	margin-bottom: 16px;
+	border-radius: var(--radius);
+	background: var(--surface);
+	border: 1px solid var(--line);
+	overflow: hidden;
+}
+
+.masonry__open {
+	border-radius: 0;
+}
+
+.masonry__caption {
+	display: flex;
+	flex-direction: column;
+	padding: 10px 14px 12px;
+	color: inherit;
+	text-decoration: none;
+	font-size: 0.875rem;
+	transform: translateZ(20px);
+}
+
+.masonry__caption span {
+	color: var(--muted);
+}
+
+/* ==========================================================================
+   Animals and countries
+   ========================================================================== */
+
+.tiles {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr));
+	gap: 20px;
+	padding: 0;
+	margin: 0;
+	list-style: none;
+}
+
+.tile {
+	display: block;
+	height: 100%;
+	border-radius: var(--radius);
+	background: var(--surface);
+	border: 1px solid var(--line);
+	box-shadow: var(--shadow);
+	color: inherit;
+	text-decoration: none;
+	overflow: hidden;
+}
+
+.tile__photo {
+	aspect-ratio: 1;
+	background: var(--surface-2);
+}
+
+.tile__photo img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.tile__body {
+	padding: 12px 14px 16px;
+}
+
+.tile h2 {
+	font-size: 1.1rem;
+	margin: 0;
+}
+
+.tile p {
+	margin: 0 0 8px;
+	color: var(--muted);
+	font-size: 0.875rem;
+}
+
+.countries {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+	gap: 12px;
+	padding: 0;
+	margin: 0;
+	list-style: none;
+}
+
+.country {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	grid-template-rows: auto auto;
+	column-gap: 14px;
+	align-items: center;
+	padding: 14px 18px;
+	border-radius: var(--radius);
+	background: var(--surface);
+	border: 1px solid var(--line);
+	color: inherit;
+	text-decoration: none;
+}
+
+.country__flag {
+	grid-row: 1 / span 2;
+	font-size: 2.2rem;
+	line-height: 1;
+	transform: translateZ(30px);
+}
+
+.country__name {
+	font-weight: 700;
+}
+
+.country__meta {
+	color: var(--muted);
+	font-size: 0.8rem;
+}
+
+/* ==========================================================================
+   Maps
+   ========================================================================== */
+
+.map {
+	border-radius: var(--radius);
+	border: 1px solid var(--line);
+	overflow: hidden;
+	background: var(--surface-2);
+	z-index: 0;
+}
+
+.map--full {
+	height: min(72vh, 720px);
+}
+
+.map--inline {
+	height: 380px;
+	margin-bottom: 8px;
+}
+
+/* OpenStreetMap only draws light tiles, so they're inverted and tinted green. */
+.leaflet-tile-pane {
+	filter: invert(1) hue-rotate(180deg) brightness(0.75) contrast(1.1) sepia(0.4) hue-rotate(70deg) saturate(1.6);
+}
+
+.map__popup {
+	font: 14px/1.4 var(--font);
+}
+
+.map__popup strong {
+	display: block;
+	font-size: 1rem;
+}
+
+.legend {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 16px;
+	padding: 0;
+	margin: 12px 0 0;
+	list-style: none;
+	color: var(--muted);
+	font-size: 0.875rem;
+}
+
+.legend li {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.legend__dot {
+	width: 12px;
+	height: 12px;
+	border-radius: 50%;
+	background: var(--other);
+}
+
+.legend__dot[data-group="Mammals"] { background: var(--mammals); }
+.legend__dot[data-group="Birds"] { background: var(--birds); }
+.legend__dot[data-group="Reptiles"] { background: var(--reptiles); }
+.legend__dot[data-group="Sharks & rays"] { background: var(--sharks); }
+
+.filter {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+}
+
+.filter label {
+	color: var(--muted);
+	font-size: 0.875rem;
+}
+
+.filter select {
+	padding: 8px 12px;
+	border: 1px solid var(--line);
+	border-radius: var(--radius-sm);
+	background: var(--surface);
+	color: var(--text);
+	font: inherit;
+}
+
+.js .filter[data-autosubmit] button {
+	display: none;
+}
+
+/* ==========================================================================
+   Statistics
+   ========================================================================== */
+
+.figures--wide {
+	margin-bottom: 40px;
+}
+
+.charts {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(min(100%, 360px), 1fr));
+	gap: 20px;
+}
+
+.chart {
+	padding: 20px;
+	background: var(--surface);
+	border: 1px solid var(--line);
+	border-radius: var(--radius);
+}
+
+.chart h2 {
+	font-size: 1.15rem;
+	margin: 0;
+}
+
+.chart__note {
+	color: var(--muted);
+	font-size: 0.8rem;
+	margin: 4px 0 0;
+}
+
+.bars {
+	display: grid;
+	gap: 8px;
+	padding: 0;
+	margin: 16px 0 0;
+	list-style: none;
+}
+
+.bar {
+	display: grid;
+	grid-template-columns: minmax(90px, 38%) 1fr auto;
+	align-items: center;
+	gap: 10px;
+	font-size: 0.85rem;
+}
+
+.bar__label {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.bar__fill {
+	height: 14px;
+	border-radius: 4px;
+	background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 60%, var(--accent-2)));
+	width: calc(var(--share) * 100%);
+	min-width: 2px;
+	transform-origin: left;
+	animation: grow 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.bar__value {
+	font-variant-numeric: tabular-nums;
+	color: var(--muted);
+	text-align: right;
+}
+
+.chart--columns .bars {
+	grid-auto-flow: column;
+	grid-auto-columns: 1fr;
+	align-items: end;
+	gap: 4px;
+	height: 200px;
+}
+
+.chart--columns .bar {
+	grid-template-columns: 1fr;
+	grid-template-rows: auto 1fr auto;
+	height: 100%;
+	gap: 4px;
+	text-align: center;
+}
+
+.chart--columns .bar__value {
+	grid-row: 1;
+	text-align: center;
+	font-size: 0.7rem;
+}
+
+.chart--columns .bar__fill {
+	grid-row: 2;
+	align-self: end;
+	width: 100%;
+	height: calc(var(--share) * 100%);
+	min-height: 2px;
+	border-radius: 4px 4px 0 0;
+	background: linear-gradient(0deg, var(--accent), color-mix(in srgb, var(--accent) 50%, var(--accent-2)));
+	transform-origin: bottom;
+	animation-name: rise;
+}
+
+.chart--columns .bar__label {
+	grid-row: 3;
+	font-size: 0.7rem;
+	color: var(--muted);
+}
+
+@keyframes grow {
+	from {
+		transform: scaleX(0);
+	}
+}
+
+@keyframes rise {
+	from {
+		transform: scaleY(0);
+	}
+}
+
+/* ==========================================================================
+   Error page
+   ========================================================================== */
+
+.error-page {
+	text-align: center;
+	padding: 64px 0;
+}
+
+.error-page h1 {
+	font-size: clamp(5rem, 18vw, 10rem);
+	margin: 0;
+	color: var(--accent);
+}
+
+.error-page .lede {
+	margin: 0 auto 28px;
+}
+
+.error-page__tracks {
+	display: flex;
+	justify-content: center;
+	gap: 28px;
+	font-size: 1.75rem;
+}
+
+.error-page__tracks span {
+	opacity: 0;
+	animation: step 2.4s ease-in-out infinite;
+}
+
+.error-page__tracks span:nth-child(odd) {
+	transform: translateY(-10px) rotate(-12deg);
+}
+
+.error-page__tracks span:nth-child(2) { animation-delay: 0.3s; }
+.error-page__tracks span:nth-child(3) { animation-delay: 0.6s; }
+.error-page__tracks span:nth-child(4) { animation-delay: 0.9s; }
+
+@keyframes step {
+	30%,
+	60% {
+		opacity: 0.8;
+	}
+}
+
+/* ==========================================================================
+   Motion: respect anyone who has asked for less of it.
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+	}
+
+	[data-tilt] {
+		transform: none;
+	}
+}
+
+/* ==========================================================================
+   Neon city: glow, scanlines, the grid floor, the glitch title and cut
+   corners, laid over everything above.
+   ========================================================================== */
+
+::selection {
+	background: var(--accent);
+	color: var(--accent-ink);
+}
+
+html {
+	scrollbar-color: var(--line) var(--bg);
+}
+
+body {
+	font-size: 15px;
+	background:
+		radial-gradient(ellipse 80% 50% at 85% -10%, rgb(255 51 51 / 0.12), transparent 60%),
+		radial-gradient(ellipse 70% 50% at 0% 0%, rgb(0 255 65 / 0.08), transparent 60%),
+		var(--bg);
+	background-attachment: fixed;
+	overflow-x: clip;
+}
+
+/* Scanlines over the whole screen, with a faint bright band rolling down. */
+body::after {
+	content: "";
+	position: fixed;
+	inset: 0;
+	z-index: 2000;
+	pointer-events: none;
+	background:
+		linear-gradient(180deg, transparent 0%, rgb(0 255 65 / 0.035) 50%, transparent 100%) 0 0 / 100% 30vh no-repeat,
+		repeating-linear-gradient(180deg, rgb(0 0 0 / 0.28) 0 1px, transparent 1px 3px);
+	animation: roll 9s linear infinite;
+}
+
+@keyframes roll {
+	from { background-position: 0 -30vh, 0 0; }
+	to { background-position: 0 130vh, 0 0; }
+}
+
+h1,
+h2,
+h3 {
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+}
+
+h1 {
+	font-size: clamp(1.75rem, 4.2vw, 3rem);
+	font-weight: 900;
+	line-height: 1.1;
+	color: #fff;
+	text-shadow: var(--glow);
+}
+
+h2 {
+	font-size: 1.1rem;
+	font-weight: 700;
+}
+
+a {
+	transition: color 0.2s ease, text-shadow 0.2s ease;
+}
+
+a:hover {
+	text-shadow: var(--glow);
+}
+
+code {
+	color: var(--accent);
+	border: 1px solid var(--line);
+}
+
+.eyebrow {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	color: var(--accent-2);
+	text-shadow: var(--glow-red);
+	font-family: var(--font);
+}
+
+.eyebrow::before {
+	content: "";
+	width: 8px;
+	height: 8px;
+	background: var(--accent-2);
+	box-shadow: var(--glow-red);
+	animation: blink 1.4s steps(2, start) infinite;
+}
+
+@keyframes blink {
+	to { visibility: hidden; }
+}
+
+.lede {
+	font-size: 1rem;
+}
+
+/* Header and nav */
+
+.site-header {
+	background: rgb(0 0 0 / 0.78);
+	border-bottom: 1px solid var(--line);
+	box-shadow: 0 1px 0 rgb(0 255 65 / 0.25), 0 6px 24px rgb(0 255 65 / 0.06);
+}
+
+.brand {
+	font-size: 1rem;
+	font-weight: 900;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	text-shadow: var(--glow);
+}
+
+.brand:hover {
+	text-shadow: var(--glow);
+}
+
+.brand__mark {
+	width: 34px;
+	height: 34px;
+	border-radius: 0;
+	background: none;
+	color: var(--accent);
+	filter: drop-shadow(0 0 4px rgb(0 255 65 / 0.8));
+}
+
+.brand__mark svg {
+	width: 100%;
+	height: 100%;
+}
+
+.brand__name b {
+	color: var(--accent-2);
+	text-shadow: var(--glow-red);
+	font-weight: inherit;
+}
+
+.site-nav a {
+	border-radius: 0;
+	border: 1px solid transparent;
+	font-size: 0.8rem;
+	text-transform: uppercase;
+	letter-spacing: 0.1em;
+}
+
+.site-nav a:hover {
+	background: transparent;
+	color: var(--accent);
+}
+
+.site-nav a[aria-current="page"] {
+	background: rgb(0 255 65 / 0.08);
+	color: var(--accent);
+	border-color: var(--accent);
+	box-shadow: var(--glow), inset 0 0 12px rgb(0 255 65 / 0.15);
+	text-shadow: var(--glow);
+}
+
+.site-footer {
+	font-size: 0.75rem;
+	letter-spacing: 0.03em;
+	box-shadow: 0 -1px 0 rgb(0 255 65 / 0.15);
+}
+
+/* Buttons, tags and badges, with the corners cut off */
+
+.button {
+	border-radius: 0;
+	clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+	text-transform: uppercase;
+	letter-spacing: 0.12em;
+	font-size: 0.85rem;
+	font-weight: 700;
+	transition: transform 0.15s ease, filter 0.2s ease, background 0.2s ease;
+}
+
+.button:hover {
+	box-shadow: none;
+	text-shadow: none;
+	filter: drop-shadow(0 0 10px rgb(0 255 65 / 0.7));
+}
+
+.button--ghost {
+	border-color: var(--accent-2);
+	color: var(--accent-2);
+	background: rgb(255 51 51 / 0.06);
+}
+
+.button--ghost:hover {
+	background: var(--accent-2);
+	color: #000;
+	filter: drop-shadow(0 0 10px rgb(255 51 51 / 0.7));
+}
+
+.tag {
+	border-radius: 0;
+	background: transparent;
+	border: 1px solid var(--line);
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+}
+
+.badge {
+	border-radius: 0;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+}
+
+/* The hero: a glowing grid floor running towards the horizon */
+
+.hero {
+	position: relative;
+	isolation: isolate;
+	padding: 24px 0 72px;
+}
+
+.hero__grid {
+	position: absolute;
+	left: 50%;
+	bottom: 0;
+	z-index: -1;
+	width: 100vw;
+	height: 55%;
+	transform: translateX(-50%);
+	perspective: 320px;
+	overflow: hidden;
+	pointer-events: none;
+	mask-image: linear-gradient(to top, #000 10%, transparent 95%);
+}
+
+.hero__grid::before {
+	content: "";
+	position: absolute;
+	left: -50%;
+	right: -50%;
+	top: 0;
+	height: 200%;
+	transform-origin: 50% 0;
+	transform: rotateX(62deg);
+	background-image:
+		linear-gradient(rgb(0 255 65 / 0.55) 1px, transparent 1px),
+		linear-gradient(90deg, rgb(0 255 65 / 0.4) 1px, transparent 1px);
+	background-size: 48px 48px;
+	animation: drive 2.4s linear infinite;
+}
+
+/* The horizon line, glowing red where the grid meets the sky. */
+.hero__grid::after {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 2px;
+	background: linear-gradient(90deg, transparent, var(--accent-2), transparent);
+	box-shadow: 0 0 24px 4px rgb(255 51 51 / 0.45);
+}
+
+@keyframes drive {
+	to { background-position: 0 48px, 0 0; }
+}
+
+.globe::before {
+	background: radial-gradient(circle at 50% 50%, rgb(0 255 65 / 0.28), transparent 65%);
+}
+
+.globe__hint {
+	text-transform: uppercase;
+	letter-spacing: 0.2em;
+	font-size: 0.7rem;
+}
+
+/* The glitch: two coloured copies of the title that jump about now and then. */
+
+.glitch {
+	position: relative;
+	display: block;
+}
+
+.glitch::before,
+.glitch::after {
+	content: attr(data-text);
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	opacity: 0;
+}
+
+.glitch::before {
+	color: var(--accent-2);
+	text-shadow: var(--glow-red);
+	animation: glitch-a 5s infinite steps(1);
+}
+
+.glitch::after {
+	color: #00e5ff;
+	text-shadow: 0 0 8px rgb(0 229 255 / 0.6);
+	animation: glitch-b 5s infinite steps(1);
+}
+
+@keyframes glitch-a {
+	0%, 88%, 100% { opacity: 0; transform: none; clip-path: inset(0); }
+	89% { opacity: 0.9; transform: translate(-4px, 1px); clip-path: inset(10% 0 60% 0); }
+	91% { opacity: 0.9; transform: translate(5px, -2px); clip-path: inset(55% 0 20% 0); }
+	93% { opacity: 0.9; transform: translate(-2px, 0); clip-path: inset(30% 0 45% 0); }
+	95% { opacity: 0; }
+}
+
+@keyframes glitch-b {
+	0%, 89%, 100% { opacity: 0; transform: none; clip-path: inset(0); }
+	90% { opacity: 0.8; transform: translate(4px, -1px); clip-path: inset(65% 0 5% 0); }
+	92% { opacity: 0.8; transform: translate(-5px, 2px); clip-path: inset(5% 0 75% 0); }
+	94% { opacity: 0; }
+}
+
+.glitch-jolt {
+	animation: jolt 5s infinite steps(1);
+}
+
+@keyframes jolt {
+	0%, 88%, 96%, 100% { transform: none; }
+	90% { transform: skewX(-8deg) translateX(2px); }
+	92% { transform: skewX(6deg) translateX(-3px); }
+}
+
+.section-head h2::before {
+	content: "// ";
+	color: var(--accent-2);
+	text-shadow: var(--glow-red);
+}
+
+.section-head a {
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	font-size: 0.8rem;
+}
+
+/* Panels: cards, tiles, figures and charts all glow when you point at them */
+
+.card,
+.tile,
+.figure,
+.facts,
+.chart,
+.country,
+.masonry__item,
+.taxonomy li {
+	background: linear-gradient(180deg, rgb(0 255 65 / 0.03), transparent 40%), var(--surface);
+	border-color: var(--line);
+	transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.card:hover,
+.tile:hover,
+.country:hover,
+.masonry__item:hover,
+.card:focus-within,
+.tile:focus-visible,
+.country:focus-visible {
+	border-color: var(--accent);
+	box-shadow: var(--shadow-lift);
+}
+
+/* The photo's top-right corner is cut off, like a HUD panel. */
+.card__photo,
+.tile__photo {
+	clip-path: polygon(0 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% 100%, 0 100%);
+	border-bottom: 1px solid var(--line);
+}
+
+.card__photo img,
+.tile__photo img {
+	filter: saturate(0.85) contrast(1.05);
+	transition: transform 0.5s ease, filter 0.3s ease;
+}
+
+.card:hover .card__photo img,
+.tile:hover .tile__photo img {
+	filter: saturate(1.15) contrast(1.1);
+}
+
+/* A green tint and scan sweep over the photo on hover. */
+.card__photo::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(180deg, transparent 40%, rgb(0 255 65 / 0.35) 50%, transparent 60%) 0 -100% / 100% 200% no-repeat;
+	mix-blend-mode: screen;
+	opacity: 0;
+	pointer-events: none;
+}
+
+.card:hover .card__photo::after {
+	opacity: 1;
+	animation: sweep 1.1s ease-out;
+}
+
+@keyframes sweep {
+	from { background-position: 0 -100%; }
+	to { background-position: 0 200%; }
+}
+
+.card__placeholder {
+	font-size: 0.8rem;
+	letter-spacing: 0.3em;
+	color: var(--accent-2);
+	opacity: 0.7;
+	text-shadow: var(--glow-red);
+	background: repeating-linear-gradient(0deg, rgb(255 255 255 / 0.03) 0 2px, transparent 2px 4px);
+}
+
+.card h2,
+.tile h2 {
+	font-size: 0.95rem;
+	transition: color 0.2s ease, text-shadow 0.2s ease;
+}
+
+.card:hover h2,
+.tile:hover h2 {
+	color: var(--accent);
+	text-shadow: var(--glow);
+}
+
+.card__meta dt,
+.facts dt,
+.readings dt {
+	text-transform: uppercase;
+	font-size: 0.75rem;
+	letter-spacing: 0.08em;
+	padding-top: 2px;
+}
+
+.card__count,
+.weather-chip {
+	border-radius: 0;
+	background: rgb(0 0 0 / 0.75);
+	color: var(--accent);
+	border: 1px solid rgb(0 255 65 / 0.4);
+	font-family: var(--font);
+	text-shadow: 0 0 6px rgb(0 255 65 / 0.6);
+}
+
+[data-tilt]::after {
+	background: radial-gradient(circle at var(--gx) var(--gy), rgb(0 255 65 / 0.25), transparent 55%);
+	mix-blend-mode: screen;
+}
+
+.figure__value {
+	color: var(--accent);
+	text-shadow: var(--glow);
+}
+
+/* The weather card and the rest of the detail page */
+
+.flip__front {
+	color: #fff;
+	background:
+		repeating-linear-gradient(0deg, rgb(0 0 0 / 0.2) 0 1px, transparent 1px 3px),
+		linear-gradient(145deg, #00140a, #003d18 55%, #3d0a0a);
+	border: 1px solid var(--accent);
+	box-shadow: var(--glow);
+}
+
+.weather__temp {
+	text-shadow: var(--glow);
+}
+
+.remarks blockquote {
+	border-left-color: var(--accent-2);
+}
+
+.bar__fill,
+.chart--columns .bar__fill {
+	border-radius: 0;
+	background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 40%, var(--accent-2)));
+	box-shadow: 0 0 10px rgb(0 255 65 / 0.4);
+}
+
+.filter select {
+	border-radius: 0;
+}
+
+.lightbox {
+	border: 1px solid var(--accent);
+	box-shadow: var(--glow);
+}
+
+.map,
+.minimap {
+	border-color: var(--accent);
+	box-shadow: 0 0 18px rgb(0 255 65 / 0.18);
+}
+
+.leaflet-container .leaflet-popup-content-wrapper,
+.leaflet-container .leaflet-popup-tip {
+	background: var(--surface);
+	color: var(--text);
+	border: 1px solid var(--accent);
+	border-radius: 0;
+}
+
+.error-page h1 {
+	text-shadow: var(--glow);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	body::after,
+	.hero__grid::before,
+	.glitch::before,
+	.glitch::after,
+	.glitch-jolt,
+	.eyebrow::before {
+		animation: none !important;
+	}
 }

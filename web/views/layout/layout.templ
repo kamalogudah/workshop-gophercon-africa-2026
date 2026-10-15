@@ -1,7 +1,12 @@
 package layout
 
+// BaseProps configures the page shell. Active names the nav link to
+// highlight, and Maps loads Leaflet for pages that draw a map.
 type BaseProps struct {
-	Title string
+	Title       string
+	Description string
+	Active      string
+	Maps        bool
 }
 
 templ Base(props BaseProps) {
@@ -10,14 +15,69 @@ templ Base(props BaseProps) {
 		<head>
 			<meta charset="utf-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1"/>
-			<title>{ props.Title }</title>
+			<title>{ props.Title } · Wild Sightings</title>
+			if props.Description != "" {
+				<meta name="description" content={ props.Description }/>
+			}
+			<meta name="theme-color" content="#000000"/>
+			<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='black'/><path d='M16 2 28 9v14l-12 7L4 23V9z' fill='none' stroke='%2300ff41' stroke-width='2'/><circle cx='16' cy='19' r='4' fill='%23ff3333'/><circle cx='10.5' cy='13' r='2' fill='%2300ff41'/><circle cx='14' cy='10' r='2' fill='%2300ff41'/><circle cx='18' cy='10' r='2' fill='%2300ff41'/><circle cx='21.5' cy='13' r='2' fill='%2300ff41'/></svg>"/>
+			<link rel="preconnect" href="https://fonts.googleapis.com"/>
+			<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+			<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Orbitron:wght@700;900&display=swap"/>
 			<link rel="stylesheet" href="/assets/css/app.css"/>
+			if props.Maps {
+				<link rel="stylesheet" href="/assets/vendor/leaflet/leaflet.css"/>
+				<script src="/assets/vendor/leaflet/leaflet.js" defer></script>
+			}
 		</head>
 		<body>
-			<main class="container">
+			<a class="skip-link" href="#main">Skip to content</a>
+			<header class="site-header">
+				<div class="site-header__inner">
+					<a class="brand" href="/">
+						<span class="brand__mark" aria-hidden="true">
+							<svg viewBox="0 0 32 32" fill="none">
+								<path d="M16 2 28 9v14l-12 7L4 23V9z" stroke="currentColor" stroke-width="1.5"></path>
+								<circle cx="16" cy="19" r="4" fill="#ff3333"></circle>
+								<circle cx="10.5" cy="13" r="2" fill="currentColor"></circle>
+								<circle cx="14" cy="10" r="2" fill="currentColor"></circle>
+								<circle cx="18" cy="10" r="2" fill="currentColor"></circle>
+								<circle cx="21.5" cy="13" r="2" fill="currentColor"></circle>
+							</svg>
+						</span>
+						<span class="brand__name">Wild<b>.</b>Sightings</span>
+					</a>
+					<nav class="site-nav" aria-label="Main">
+						@navLink("/", "Sightings", props.Active)
+						@navLink("/map", "Map", props.Active)
+						@navLink("/gallery", "Gallery", props.Active)
+						@navLink("/animals", "Animals", props.Active)
+						@navLink("/countries", "Countries", props.Active)
+						@navLink("/stats", "Stats", props.Active)
+					</nav>
+				</div>
+			</header>
+			<main id="main" class="container">
 				{ children... }
 			</main>
-			<script src="/assets/js/app.js"></script>
+			<footer class="site-footer">
+				<p>
+					Occurrence data from <a href="https://www.gbif.org" rel="noopener">GBIF</a>,
+					weather from <a href="https://open-meteo.com" rel="noopener">Open-Meteo</a>,
+					map tiles © <a href="https://www.openstreetmap.org/copyright" rel="noopener">OpenStreetMap</a> contributors.
+					Built with Go, sqlc and templ at GopherCon Africa 2026.
+				</p>
+			</footer>
+			<script src="/assets/js/app.js" defer></script>
 		</body>
 	</html>
+}
+
+templ navLink(href, label, active string) {
+	<a
+		href={ templ.SafeURL(href) }
+		if label == active {
+			aria-current="page"
+		}
+	>{ label }</a>
 }

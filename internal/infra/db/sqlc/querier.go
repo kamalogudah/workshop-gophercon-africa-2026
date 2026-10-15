@@ -12,10 +12,15 @@ import (
 
 type Querier interface {
 	SightingCreate(ctx context.Context, arg SightingCreateParams) (Sighting, error)
+	SightingEnrich(ctx context.Context, arg SightingEnrichParams) error
 	SightingFind(ctx context.Context, id uuid.UUID) (SightingFindRow, error)
 	SightingFindByGbifKey(ctx context.Context, gbifKey int64) (SightingFindByGbifKeyRow, error)
 	SightingList(ctx context.Context, arg SightingListParams) ([]SightingListRow, error)
+	// Sightings saved before 0003, or whose details GBIF left blank.
+	SightingListUnenriched(ctx context.Context, limit int64) ([]SightingListUnenrichedRow, error)
 	SpeciesCreate(ctx context.Context, arg SpeciesCreateParams) (Species, error)
+	// A blank value leaves what is already there.
+	SpeciesEnrich(ctx context.Context, arg SpeciesEnrichParams) error
 	SpeciesFind(ctx context.Context, id uuid.UUID) (Species, error)
 	SpeciesFindByGbifKey(ctx context.Context, gbifKey int64) (Species, error)
 	SpeciesList(ctx context.Context) ([]Species, error)

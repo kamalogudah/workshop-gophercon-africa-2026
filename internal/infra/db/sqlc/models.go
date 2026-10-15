@@ -33,6 +33,12 @@ type Sighting struct {
 	SpeciesID                     uuid.UUID `db:"species_id" json:"species_id"`
 	WeatherID                     uuid.UUID `db:"weather_id" json:"weather_id"`
 	Media                         string    `db:"media" json:"media"`
+	Continent                     string    `db:"continent" json:"continent"`
+	Sex                           string    `db:"sex" json:"sex"`
+	LifeStage                     string    `db:"life_stage" json:"life_stage"`
+	Behaviour                     string    `db:"behaviour" json:"behaviour"`
+	IdentifiedBy                  string    `db:"identified_by" json:"identified_by"`
+	DatasetName                   string    `db:"dataset_name" json:"dataset_name"`
 }
 
 type Species struct {
@@ -51,6 +57,8 @@ type Species struct {
 	ScientificName string    `db:"scientific_name" json:"scientific_name"`
 	CanonicalName  string    `db:"canonical_name" json:"canonical_name"`
 	VernacularName string    `db:"vernacular_name" json:"vernacular_name"`
+	GenusKey       int64     `db:"genus_key" json:"genus_key"`
+	IucnCategory   string    `db:"iucn_category" json:"iucn_category"`
 }
 
 type Weather struct {

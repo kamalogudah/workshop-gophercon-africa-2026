@@ -75,3 +75,13 @@ func (s Store) Create(ctx context.Context, id uuid.UUID, in species.CreateParams
 
 	return transform(row), nil
 }
+
+// Enrich saves the details of the species with id, leaving any that
+// are zero as they were.
+func (s Store) Enrich(ctx context.Context, id uuid.UUID, details species.Details) error {
+	return s.queries.SpeciesEnrich(ctx, db.SpeciesEnrichParams{
+		GenusKey:     int64(details.GenusKey),
+		IucnCategory: details.IUCNCategory.String(),
+		ID:           id,
+	})
+}

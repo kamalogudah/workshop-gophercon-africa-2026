@@ -53,6 +53,7 @@ func newAPIs(t *testing.T) *apis {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /gbif/v1/occurrence/search", a.search)
+	mux.HandleFunc("GET /gbif/v1/occurrence/{key}", a.occurrence)
 	mux.HandleFunc("GET /gbif/v1/species/{key}", a.species)
 	mux.HandleFunc("GET /weather/v1/archive", a.archive)
 
@@ -91,6 +92,18 @@ func (a *apis) search(w http.ResponseWriter, r *http.Request) {
 		Count:        int64(len(a.occurrences)),
 		Results:      a.occurrences[start:end],
 	})
+}
+
+// occurrence returns the occurrence with the key asked for, or a 404.
+func (a *apis) occurrence(w http.ResponseWriter, r *http.Request) {
+	key, _ := strconv.ParseInt(r.PathValue("key"), 10, 64)
+	for _, o := range a.occurrences {
+		if o.Key == key {
+			a.write(w, o)
+			return
+		}
+	}
+	w.WriteHeader(http.StatusNotFound)
 }
 
 // species returns a lion under whichever key is asked for, so each new

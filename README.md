@@ -155,7 +155,24 @@ want. Don't be afraid to add some flair, and use your imagination.
 3. **Choose what's on the page.** `web/handlers/home.go` decides which sightings the home page
    lists: the `sighting.ListFilter` there takes animals, a country, a date range and a limit.
 
-Some ideas, if you want more than a restyle:
+Already built, as starting points to restyle or extend:
+
+| Page | What it shows |
+|------|---------------|
+| `/` | A spinning 3D globe of every sighting (drag it), then the latest sightings as tilting cards |
+| `/sightings/{id}` | One sighting: photos with a lightbox, a flip card of the weather, a map, taxonomy and the full record |
+| `/animals`, `/animals/{animal}` | Every animal, and each one's sightings with a map |
+| `/countries`, `/countries/{code}` | Every country, and what's been seen there |
+| `/map` | Every sighting on a Leaflet map, filterable by animal |
+| `/gallery` | A masonry wall of photos, filterable by animal |
+| `/stats` | Headline figures and charts: species, countries, continents, conservation status, seasons, weather |
+| `/api/points` | The sightings as JSON, for the map and the globe |
+
+Migration `0003` added each sighting's continent, sex, life stage, behaviour, identifier and
+dataset, and each species' genus and IUCN Red List category. Sightings ingested before it get
+them with `go run . sightings enrich`.
+
+Some more ideas:
 
 - A page per sighting (`/sightings/{id}`), animal or country.
 - The weather on each sighting.

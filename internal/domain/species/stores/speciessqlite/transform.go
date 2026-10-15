@@ -21,6 +21,8 @@ func transform(r db.Species) species.Species {
 		ScientificName: r.ScientificName,
 		CanonicalName:  r.CanonicalName,
 		VernacularName: r.VernacularName,
+		GenusKey:       int(r.GenusKey),
+		IUCNCategory:   species.IUCNCategory(r.IucnCategory),
 		CreatedAt:      r.CreatedAt,
 		UpdatedAt:      r.UpdatedAt,
 	}
@@ -41,5 +43,7 @@ func toSpeciesCreateParams(id uuid.UUID, in species.CreateParams) db.SpeciesCrea
 		ScientificName: in.ScientificName,
 		CanonicalName:  in.CanonicalName,
 		VernacularName: in.VernacularName,
+		GenusKey:       int64(in.GenusKey),
+		IucnCategory:   in.IUCNCategory.String(),
 	}
 }

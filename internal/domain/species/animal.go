@@ -140,6 +140,37 @@ func Animals() []Animal {
 	return slices.Sorted(maps.Keys(animalTaxonKeys))
 }
 
+// AnimalOf returns the animal a GBIF taxon key belongs to. Where more
+// than one covers it, such as "alligator" and "american_alligator", the
+// narrower one wins.
+func AnimalOf(gbifKey int) (Animal, bool) {
+	a, ok := animalsByKey[gbifKey]
+	return a, ok
+}
+
+// animalsByKey indexes animalTaxonKeys the other way round, keeping the
+// narrower animal where two share a key.
+var animalsByKey = func() map[int]Animal {
+	index := make(map[int]Animal)
+	for _, animal := range Animals() {
+		for _, key := range animalTaxonKeys[animal] {
+			if prev, ok := index[key]; !ok || len(animalTaxonKeys[animal]) < len(animalTaxonKeys[prev]) {
+				index[key] = animal
+			}
+		}
+	}
+	return index
+}()
+
+// Name is the animal as a reader would write it, such as "Spotted hyena".
+func (a Animal) Name() string {
+	name := strings.ReplaceAll(string(a), "_", " ")
+	if name == "" {
+		return ""
+	}
+	return strings.ToUpper(name[:1]) + name[1:]
+}
+
 var animalTaxonKeys = map[Animal][]int{
 	AnimalLion:           {5219404},                                     // Panthera leo
 	AnimalLeopard:        {5219436},                                     // Panthera pardus

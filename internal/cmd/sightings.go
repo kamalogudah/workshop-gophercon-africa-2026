@@ -128,6 +128,19 @@ func sightingsCmd(app *app) *cli.Command {
 					})
 				},
 			},
+			{
+				Name:      "enrich",
+				Usage:     "Fill in the sex, life stage, continent and conservation status of sightings saved before they were recorded",
+				UsageText: "workshop sightings enrich [-n 0]",
+				Flags: []cli.Flag{
+					limitFlag(0, "maximum number of sightings to enrich, 0 for all"),
+				},
+				Action: func(ctx context.Context, cmd *cli.Command) error {
+					return runEnrich(ctx, app, sighting.EnrichRequest{
+						Limit: cmd.Int("limit"),
+					})
+				},
+			},
 		},
 	}
 }
@@ -242,6 +255,36 @@ func runIngest(ctx context.Context, app *app, opts sighting.IngestRequest) error
 			view.Hintf("%s workshop sightings find %s", styles.IconArrow, view.ShortID(res.Created[0].ID)),
 		)
 	}
+
+	return nil
+}
+
+// runEnrich fetches each unenriched sighting's occurrence again and
+// reports how many were filled in.
+func runEnrich(ctx context.Context, app *app, req sighting.EnrichRequest) error {
+	if err := app.ensureAPIs(ctx); err != nil {
+		return err
+	}
+
+	req.OnProgress = func(done, total int) {
+		app.Printer.Statusf("Fetching occurrences from GBIF… %d/%d", done, total)
+	}
+
+	start := time.Now()
+	res, err := app.Sightings.Enrich(ctx, req)
+	app.Printer.ClearStatus()
+	if err != nil {
+		return fmt.Errorf("enriching sightings: %w", err)
+	}
+
+	sep := styles.Muted.Render(" " + styles.IconDot + " ")
+	view.Render(app.Printer, view.Card{Heading: "Enrich complete", Body: strings.Join([]string{
+		styles.Success.Render(fmt.Sprintf("%s %d updated", styles.IconSuccess, res.Updated)),
+		styles.Value.Render(fmt.Sprintf("%d species updates", res.Species)),
+		styles.Value.Render(fmt.Sprintf("%d failed", res.Failed)),
+	}, sep) + "\n" + styles.Muted.Render(fmt.Sprintf(
+		"Checked %d sightings in %s", res.Checked, time.Since(start).Round(100*time.Millisecond),
+	))})
 
 	return nil
 }

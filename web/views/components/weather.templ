@@ -1,0 +1,81 @@
+package components
+
+import (
+	"fmt"
+	"strconv"
+	"workshop/internal/domain/species"
+	"workshop/internal/domain/weather"
+	"workshop/web/views/format"
+)
+
+// WeatherChip is the weather at a glance, laid over a card's photo.
+templ WeatherChip(w weather.Weather) {
+	<span class="weather-chip" title={ w.Condition.Description }>
+		<span aria-hidden="true">{ format.WeatherIcon(w.Condition.Code) }</span>
+		{ format.Temperature(w.Temperature.Actual) }
+	</span>
+}
+
+// WeatherPanel is a card that flips over: the conditions on the front,
+// the readings behind them on the back.
+templ WeatherPanel(w weather.Weather) {
+	<section class="weather" aria-labelledby="weather-title">
+		<h2 id="weather-title">Weather at the time</h2>
+		<div class="flip" data-flip tabindex="0" role="button" aria-label="Flip for the readings">
+			<div class="flip__inner">
+				<div class="flip__face flip__front">
+					<span class="weather__icon" aria-hidden="true">{ format.WeatherIcon(w.Condition.Code) }</span>
+					<p class="weather__temp">{ format.Temperature(w.Temperature.Actual) }</p>
+					<p class="weather__condition">{ w.Condition.Description }</p>
+					<p class="weather__feels">Felt like { format.Temperature(w.Temperature.Apparent) }</p>
+					<p class="flip__hint">Tap to flip</p>
+				</div>
+				<div class="flip__face flip__back">
+					<dl class="readings">
+						<dt>Humidity</dt>
+						<dd>{ strconv.Itoa(w.Humidity) }%</dd>
+						<dt>Cloud cover</dt>
+						<dd>{ strconv.Itoa(w.CloudCover) }%</dd>
+						<dt>Rain</dt>
+						<dd>{ fmt.Sprintf("%.1f mm", w.Precipitation.Rain) }</dd>
+						if w.Precipitation.Snowfall > 0 {
+							<dt>Snow</dt>
+							<dd>{ fmt.Sprintf("%.1f cm", w.Precipitation.Snowfall) }</dd>
+						}
+						<dt>Wind</dt>
+						<dd>
+							<span class="compass" style={ compassStyle(w.Wind) } aria-hidden="true">➤</span>
+							{ fmt.Sprintf("%.0f km/h %s", w.Wind.Speed, w.Wind.Compass()) }
+						</dd>
+						<dt>Gusts</dt>
+						<dd>{ fmt.Sprintf("%.0f km/h", w.Wind.Gusts) }</dd>
+						<dt>Beaufort</dt>
+						<dd>{ beaufort(w.Wind) }</dd>
+					</dl>
+				</div>
+			</div>
+		</div>
+		<p class="weather__note">Recorded for { w.ObservedAt.Format("15:04 MST, 2 January 2006") }.</p>
+	</section>
+}
+
+// ConservationBadge shows a species' IUCN Red List category, or nothing
+// if it hasn't been assessed.
+templ ConservationBadge(c species.IUCNCategory) {
+	if c != species.IUCNUnknown {
+		<span class={ "badge", "badge--" + c.String() } title={ "IUCN Red List: " + c.Label() }>
+			{ c.String() } · { c.Label() }
+		</span>
+	}
+}
+
+// compassStyle points the arrow the way the wind blew: from Direction,
+// so towards Direction + 180. The arrow glyph points east to start.
+func compassStyle(w weather.Wind) templ.SafeCSS {
+	return templ.SafeCSS(fmt.Sprintf("--to: %ddeg", w.Direction+180-90))
+}
+
+func beaufort(w weather.Wind) string {
+	force, name := w.Beaufort()
+	return fmt.Sprintf("%d, %s", force, name)
+}

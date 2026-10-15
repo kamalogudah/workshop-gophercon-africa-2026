@@ -1,0 +1,169 @@
+package pages
+
+import (
+	"fmt"
+	"strconv"
+	"workshop/internal/domain/sighting"
+	"workshop/web/views/components"
+	"workshop/web/views/format"
+	"workshop/web/views/layout"
+)
+
+templ Sighting(s sighting.Sighting) {
+	@layout.Base(layout.BaseProps{
+		Title:       format.DisplayName(s.Species) + ", " + format.Date(s.HappenedAt),
+		Description: format.DisplayName(s.Species) + " seen in " + format.Place(s.Location) + ".",
+		Maps:        true,
+	}) {
+		<nav class="breadcrumbs" aria-label="Breadcrumb">
+			<a href="/">Sightings</a>
+			if animal, ok := s.Species.Animal(); ok {
+				<span aria-hidden="true">›</span>
+				<a href={ templ.SafeURL("/animals/" + animal.String()) }>{ animal.Name() }</a>
+			}
+			<span aria-hidden="true">›</span>
+			<span aria-current="page">{ format.Date(s.HappenedAt) }</span>
+		</nav>
+		<header class="detail-head">
+			<div>
+				<p class="eyebrow">{ format.Group(s.Species) }</p>
+				<h1>{ format.DisplayName(s.Species) }</h1>
+				if s.Species.ScientificName != "" {
+					<p class="scientific">{ s.Species.ScientificName }</p>
+				}
+			</div>
+			@components.ConservationBadge(s.Species.IUCNCategory)
+		</header>
+		<div class="detail">
+			<div class="detail__main">
+				<section aria-labelledby="photos-title">
+					<h2 id="photos-title" class="visually-hidden">Photos</h2>
+					@components.Gallery(s.Media)
+				</section>
+				if s.Remarks != "" {
+					<section class="remarks">
+						<h2>Observer's notes</h2>
+						<blockquote>{ s.Remarks }</blockquote>
+					</section>
+				}
+				<section aria-labelledby="where-title">
+					<h2 id="where-title">Where</h2>
+					<p>{ format.Flag(s.Location.CountryCode) } { format.Place(s.Location) }</p>
+					<div
+						class="minimap"
+						data-minimap
+						data-lat={ fmt.Sprint(s.Location.Latitude) }
+						data-lng={ fmt.Sprint(s.Location.Longitude) }
+						data-radius={ fmt.Sprint(uncertainty(s.Location)) }
+						data-label={ format.DisplayName(s.Species) }
+					></div>
+				</section>
+				<section aria-labelledby="taxonomy-title">
+					<h2 id="taxonomy-title">Taxonomy</h2>
+					<ol class="taxonomy">
+						for _, rank := range taxonomy(s) {
+							<li><span>{ rank[0] }</span> { rank[1] }</li>
+						}
+					</ol>
+				</section>
+			</div>
+			<aside class="detail__side">
+				@components.WeatherPanel(s.Weather)
+				<section class="facts" aria-labelledby="facts-title">
+					<h2 id="facts-title">The record</h2>
+					<dl>
+						<dt>When</dt>
+						<dd>{ format.When(s.HappenedAt) }</dd>
+						if s.Location.Continent != "" {
+							<dt>Continent</dt>
+							<dd>{ format.Continent(s.Location.Continent) }</dd>
+						}
+						<dt>Coordinates</dt>
+						<dd>{ fmt.Sprintf("%.4f, %.4f", s.Location.Latitude, s.Location.Longitude) }</dd>
+						if s.Location.ElevationInMetres != nil {
+							<dt>Elevation</dt>
+							<dd>{ fmt.Sprintf("%.0f m", *s.Location.ElevationInMetres) }</dd>
+						}
+						if s.IndividualCount != nil {
+							<dt>Count</dt>
+							<dd>{ format.Individuals(*s.IndividualCount) }</dd>
+						}
+						if s.Organism.Sex != "" {
+							<dt>Sex</dt>
+							<dd>{ s.Organism.Sex }</dd>
+						}
+						if s.Organism.LifeStage != "" {
+							<dt>Life stage</dt>
+							<dd>{ s.Organism.LifeStage }</dd>
+						}
+						if s.Organism.Behaviour != "" {
+							<dt>Behaviour</dt>
+							<dd>{ s.Organism.Behaviour }</dd>
+						}
+						if s.RecordedBy != "" {
+							<dt>Recorded by</dt>
+							<dd>{ s.RecordedBy }</dd>
+						}
+						if s.IdentifiedBy != "" && s.IdentifiedBy != s.RecordedBy {
+							<dt>Identified by</dt>
+							<dd>{ s.IdentifiedBy }</dd>
+						}
+						if s.BasisOfRecord != "" {
+							<dt>Basis</dt>
+							<dd>{ format.Humanise(s.BasisOfRecord) }</dd>
+						}
+						if s.DatasetName != "" {
+							<dt>Dataset</dt>
+							<dd>{ s.DatasetName }</dd>
+						}
+					</dl>
+					<p class="facts__links">
+						<a href={ templ.SafeURL("https://www.gbif.org/occurrence/" + strconv.FormatInt(s.GBIFKey, 10)) } rel="noopener">View on GBIF ↗</a>
+						if s.ReferenceURL != "" {
+							<a href={ templ.URL(s.ReferenceURL) } rel="noopener">Original record ↗</a>
+						}
+					</p>
+				</section>
+				<nav class="more">
+					if animal, ok := s.Species.Animal(); ok {
+						<a class="button button--ghost" href={ templ.SafeURL("/animals/" + animal.String()) }>More { animal.Name() } sightings</a>
+					}
+					if s.Location.CountryCode != "" {
+						<a class="button button--ghost" href={ templ.SafeURL("/countries/" + s.Location.CountryCode.String()) }>More in { s.Location.Country }</a>
+					}
+				</nav>
+			</aside>
+		</div>
+		@components.Lightbox()
+	}
+}
+
+// taxonomy lists the species' ranks GBIF filled in, broadest first.
+func taxonomy(s sighting.Sighting) [][2]string {
+	sp := s.Species
+	ranks := [][2]string{
+		{"Kingdom", sp.Kingdom},
+		{"Phylum", sp.Phylum},
+		{"Class", sp.Class},
+		{"Order", sp.Order},
+		{"Family", sp.Family},
+		{"Genus", sp.Genus},
+		{"Species", sp.Species},
+	}
+	out := ranks[:0]
+	for _, r := range ranks {
+		if r[1] != "" {
+			out = append(out, r)
+		}
+	}
+	return out
+}
+
+// uncertainty is how far, in metres, the animal might have been from
+// the coordinates, or zero if the record doesn't say.
+func uncertainty(l sighting.Location) float64 {
+	if l.CoordinateUncertaintyInMetres == nil {
+		return 0
+	}
+	return *l.CoordinateUncertaintyInMetres
+}

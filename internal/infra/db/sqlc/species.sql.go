@@ -12,8 +12,8 @@ import (
 )
 
 const speciesCreate = `-- name: SpeciesCreate :one
-INSERT INTO species (id, "gbif_key", "kingdom", "phylum", "class", "order", "family", "genus", "species", "rank", "scientific_name", "canonical_name", "vernacular_name")
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id, created_at, updated_at, gbif_key, kingdom, phylum, class, "order", family, genus, species, rank, scientific_name, canonical_name, vernacular_name
+INSERT INTO species (id, "gbif_key", "kingdom", "phylum", "class", "order", "family", "genus", "species", "rank", "scientific_name", "canonical_name", "vernacular_name", "genus_key", "iucn_category")
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id, created_at, updated_at, gbif_key, kingdom, phylum, class, "order", family, genus, species, rank, scientific_name, canonical_name, vernacular_name, genus_key, iucn_category
 `
 
 type SpeciesCreateParams struct {
@@ -30,6 +30,8 @@ type SpeciesCreateParams struct {
 	ScientificName string    `db:"scientific_name" json:"scientific_name"`
 	CanonicalName  string    `db:"canonical_name" json:"canonical_name"`
 	VernacularName string    `db:"vernacular_name" json:"vernacular_name"`
+	GenusKey       int64     `db:"genus_key" json:"genus_key"`
+	IucnCategory   string    `db:"iucn_category" json:"iucn_category"`
 }
 
 func (q *Queries) SpeciesCreate(ctx context.Context, arg SpeciesCreateParams) (Species, error) {
@@ -47,6 +49,8 @@ func (q *Queries) SpeciesCreate(ctx context.Context, arg SpeciesCreateParams) (S
 		arg.ScientificName,
 		arg.CanonicalName,
 		arg.VernacularName,
+		arg.GenusKey,
+		arg.IucnCategory,
 	)
 	var i Species
 	err := row.Scan(
@@ -65,12 +69,34 @@ func (q *Queries) SpeciesCreate(ctx context.Context, arg SpeciesCreateParams) (S
 		&i.ScientificName,
 		&i.CanonicalName,
 		&i.VernacularName,
+		&i.GenusKey,
+		&i.IucnCategory,
 	)
 	return i, err
 }
 
+const speciesEnrich = `-- name: SpeciesEnrich :exec
+UPDATE species
+SET genus_key     = CASE WHEN CAST(?1 AS INTEGER) = 0 THEN genus_key ELSE ?1 END,
+	iucn_category = CASE WHEN CAST(?2 AS TEXT) = '' THEN iucn_category ELSE ?2 END,
+	updated_at    = CURRENT_TIMESTAMP
+WHERE id = ?3
+`
+
+type SpeciesEnrichParams struct {
+	GenusKey     int64     `db:"genus_key" json:"genus_key"`
+	IucnCategory string    `db:"iucn_category" json:"iucn_category"`
+	ID           uuid.UUID `db:"id" json:"id"`
+}
+
+// A blank value leaves what is already there.
+func (q *Queries) SpeciesEnrich(ctx context.Context, arg SpeciesEnrichParams) error {
+	_, err := q.db.ExecContext(ctx, speciesEnrich, arg.GenusKey, arg.IucnCategory, arg.ID)
+	return err
+}
+
 const speciesFind = `-- name: SpeciesFind :one
-SELECT id, created_at, updated_at, gbif_key, kingdom, phylum, class, "order", family, genus, species, rank, scientific_name, canonical_name, vernacular_name FROM species WHERE id = ?
+SELECT id, created_at, updated_at, gbif_key, kingdom, phylum, class, "order", family, genus, species, rank, scientific_name, canonical_name, vernacular_name, genus_key, iucn_category FROM species WHERE id = ?
 `
 
 func (q *Queries) SpeciesFind(ctx context.Context, id uuid.UUID) (Species, error) {
@@ -92,12 +118,14 @@ func (q *Queries) SpeciesFind(ctx context.Context, id uuid.UUID) (Species, error
 		&i.ScientificName,
 		&i.CanonicalName,
 		&i.VernacularName,
+		&i.GenusKey,
+		&i.IucnCategory,
 	)
 	return i, err
 }
 
 const speciesFindByGbifKey = `-- name: SpeciesFindByGbifKey :one
-SELECT id, created_at, updated_at, gbif_key, kingdom, phylum, class, "order", family, genus, species, rank, scientific_name, canonical_name, vernacular_name FROM species WHERE gbif_key = ?
+SELECT id, created_at, updated_at, gbif_key, kingdom, phylum, class, "order", family, genus, species, rank, scientific_name, canonical_name, vernacular_name, genus_key, iucn_category FROM species WHERE gbif_key = ?
 `
 
 func (q *Queries) SpeciesFindByGbifKey(ctx context.Context, gbifKey int64) (Species, error) {
@@ -119,12 +147,14 @@ func (q *Queries) SpeciesFindByGbifKey(ctx context.Context, gbifKey int64) (Spec
 		&i.ScientificName,
 		&i.CanonicalName,
 		&i.VernacularName,
+		&i.GenusKey,
+		&i.IucnCategory,
 	)
 	return i, err
 }
 
 const speciesList = `-- name: SpeciesList :many
-SELECT id, created_at, updated_at, gbif_key, kingdom, phylum, class, "order", family, genus, species, rank, scientific_name, canonical_name, vernacular_name FROM species
+SELECT id, created_at, updated_at, gbif_key, kingdom, phylum, class, "order", family, genus, species, rank, scientific_name, canonical_name, vernacular_name, genus_key, iucn_category FROM species
 `
 
 func (q *Queries) SpeciesList(ctx context.Context) ([]Species, error) {
@@ -152,6 +182,8 @@ func (q *Queries) SpeciesList(ctx context.Context) ([]Species, error) {
 			&i.ScientificName,
 			&i.CanonicalName,
 			&i.VernacularName,
+			&i.GenusKey,
+			&i.IucnCategory,
 		); err != nil {
 			return nil, err
 		}

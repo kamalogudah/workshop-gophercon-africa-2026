@@ -1,0 +1,163 @@
+package pages
+
+import (
+	"strconv"
+	"workshop/internal/domain/sighting"
+	"workshop/internal/domain/sighting/country"
+	"workshop/internal/domain/species"
+	"workshop/web/views/components"
+	"workshop/web/views/format"
+	"workshop/web/views/layout"
+)
+
+// listed is the most sightings a listing page shows as cards. The map
+// above them shows the lot.
+const listed = 60
+
+templ Animals(tallies []AnimalTally) {
+	@layout.Base(layout.BaseProps{
+		Title:       "Animals",
+		Description: "Every animal the site tracks, and how often each has been seen.",
+		Active:      "Animals",
+	}) {
+		<header class="page-head">
+			<h1>Animals</h1>
+			<p class="lede">{ strconv.Itoa(len(tallies)) } animals we follow, most seen first.</p>
+		</header>
+		<ul class="tiles">
+			for _, t := range tallies {
+				<li>
+					<a class="tile" data-tilt href={ templ.SafeURL("/animals/" + t.Animal.String()) }>
+						<div class="tile__photo">
+							if t.Photo != "" {
+								<img src={ t.Photo } alt="" loading="lazy" decoding="async"/>
+							} else {
+								<span class="card__placeholder" aria-hidden="true">NO SIGNAL</span>
+							}
+						</div>
+						<div class="tile__body">
+							<h2>{ t.Animal.Name() }</h2>
+							<p>{ format.Plural(t.Count, "sighting") }</p>
+							@components.ConservationBadge(t.Status)
+						</div>
+					</a>
+				</li>
+			}
+		</ul>
+	}
+}
+
+templ Animal(animal species.Animal, sightings []sighting.Sighting) {
+	@layout.Base(layout.BaseProps{
+		Title:       animal.Name(),
+		Description: "Every " + animal.Name() + " sighting, mapped.",
+		Active:      "Animals",
+		Maps:        true,
+	}) {
+		<nav class="breadcrumbs" aria-label="Breadcrumb">
+			<a href="/animals">Animals</a>
+			<span aria-hidden="true">›</span>
+			<span aria-current="page">{ animal.Name() }</span>
+		</nav>
+		<header class="page-head">
+			<h1>{ animal.Name() }</h1>
+			if len(sightings) > 0 {
+				@components.ConservationBadge(sightings[0].Species.IUCNCategory)
+			}
+		</header>
+		@listing(Filter{Animal: animal}, sightings)
+	}
+}
+
+templ Countries(tallies []CountryTally) {
+	@layout.Base(layout.BaseProps{
+		Title:       "Countries",
+		Description: "Every country with a sighting.",
+		Active:      "Countries",
+	}) {
+		<header class="page-head">
+			<h1>Countries</h1>
+			<p class="lede">Sightings from { strconv.Itoa(len(tallies)) } countries and territories.</p>
+		</header>
+		<ul class="countries">
+			for _, t := range tallies {
+				<li>
+					<a class="country" data-tilt href={ templ.SafeURL("/countries/" + t.Code.String()) }>
+						<span class="country__flag" aria-hidden="true">{ format.Flag(t.Code) }</span>
+						<span class="country__name">{ t.Name }</span>
+						<span class="country__meta">
+							{ format.Plural(t.Count, "sighting") } · { format.Plural(t.Species, "species") }
+							if t.Continent != "" {
+								· { format.Continent(t.Continent) }
+							}
+						</span>
+					</a>
+				</li>
+			}
+		</ul>
+	}
+}
+
+templ Country(code country.Code, sightings []sighting.Sighting) {
+	@layout.Base(layout.BaseProps{
+		Title:       countryName(code, sightings),
+		Description: "Wildlife seen in " + countryName(code, sightings) + ".",
+		Active:      "Countries",
+		Maps:        true,
+	}) {
+		<nav class="breadcrumbs" aria-label="Breadcrumb">
+			<a href="/countries">Countries</a>
+			<span aria-hidden="true">›</span>
+			<span aria-current="page">{ countryName(code, sightings) }</span>
+		</nav>
+		<header class="page-head">
+			<h1><span aria-hidden="true">{ format.Flag(code) }</span> { countryName(code, sightings) }</h1>
+		</header>
+		@listing(Filter{Country: code}, sightings)
+	}
+}
+
+// listing is the body of an animal or country page: the headline
+// figures, a map of every sighting and cards for the latest.
+templ listing(filter Filter, sightings []sighting.Sighting) {
+	if len(sightings) == 0 {
+		<p class="empty">Nothing has been seen here yet.</p>
+	} else {
+		{{ summary := sighting.Summarise(sightings) }}
+		<ul class="figures">
+			@figure(format.Number(summary.Sightings), "sightings")
+			@figure(format.Number(summary.Species), "species")
+			@figure(format.Number(summary.Countries), "countries")
+			@figure(strconv.Itoa(summary.Earliest.Year())+"–"+strconv.Itoa(summary.Latest.Year()), "years")
+		</ul>
+		<div class="map map--inline" data-map={ "/api/points?" + filter.Query() }></div>
+		<div class="section-head">
+			<h2>Latest sightings</h2>
+			<a href={ templ.SafeURL("/gallery?" + filter.Query()) }>Photos →</a>
+		</div>
+		if len(sightings) > listed {
+			<p class="muted">Showing the latest { strconv.Itoa(listed) } of { format.Number(len(sightings)) }. The map has them all.</p>
+			@components.SightingGrid(sightings[:listed])
+		} else {
+			@components.SightingGrid(sightings)
+		}
+	}
+}
+
+templ figure(value, label string) {
+	<li class="figure">
+		<span class="figure__value">{ value }</span>
+		<span class="figure__label">{ label }</span>
+	</li>
+}
+
+// countryName takes the country's name from its sightings, which carry
+// it, falling back to the code.
+func countryName(code country.Code, sightings []sighting.Sighting) string {
+	for _, s := range sightings {
+		if s.Location.Country != "" {
+			return s.Location.Country
+		}
+	}
+	return code.String()
+}

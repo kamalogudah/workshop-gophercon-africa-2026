@@ -14,6 +14,7 @@ type Store interface {
 	FindByGbifKey(ctx context.Context, gbifKey int) (Species, error)
 	List(ctx context.Context) ([]Species, error)
 	Create(ctx context.Context, id uuid.UUID, in CreateParams) (Species, error)
+	Enrich(ctx context.Context, id uuid.UUID, details Details) error
 }
 
 // Service is the entry point for working with species data.
@@ -64,4 +65,9 @@ func (s Service) List(ctx context.Context) ([]Species, error) {
 // store.
 func (s Service) Create(ctx context.Context, params CreateParams) (Species, error) {
 	return s.store.Create(ctx, uuid.New(), params)
+}
+
+// Enrich saves the details of the species with id.
+func (s Service) Enrich(ctx context.Context, id uuid.UUID, details Details) error {
+	return s.store.Enrich(ctx, id, details)
 }

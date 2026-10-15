@@ -1,0 +1,100 @@
+package pages
+
+import (
+	"workshop/internal/domain/species"
+	"workshop/web/views/components"
+	"workshop/web/views/format"
+	"workshop/web/views/layout"
+)
+
+templ Map(filter Filter) {
+	@layout.Base(layout.BaseProps{
+		Title:       "Map",
+		Description: "Every sighting on a map.",
+		Active:      "Map",
+		Maps:        true,
+	}) {
+		<header class="page-head page-head--row">
+			<div>
+				<h1>Map</h1>
+				<p class="lede">Each dot is a sighting. Click one to see it.</p>
+			</div>
+			@filterForm("/map", filter)
+		</header>
+		<div class="map map--full" data-map={ "/api/points?" + filter.Query() }></div>
+		<ul class="legend" aria-label="Legend">
+			for _, g := range []string{"Mammals", "Birds", "Reptiles", "Sharks & rays", "Other"} {
+				<li><span class="legend__dot" data-group={ g }></span>{ g }</li>
+			}
+		</ul>
+	}
+}
+
+templ Gallery(filter Filter, photos []Photo) {
+	@layout.Base(layout.BaseProps{
+		Title:       "Gallery",
+		Description: "Photos taken by the people who saw them.",
+		Active:      "Gallery",
+	}) {
+		<header class="page-head page-head--row">
+			<div>
+				<h1>Gallery</h1>
+				<p class="lede">Photos from the field, newest first. Click one to see it full size.</p>
+			</div>
+			@filterForm("/gallery", filter)
+		</header>
+		if len(photos) == 0 {
+			<p class="empty">No photos match that yet.</p>
+		} else {
+			<ul class="masonry">
+				for _, p := range photos {
+					<li class="masonry__item" data-tilt>
+						<button
+							type="button"
+							class="masonry__open"
+							data-lightbox={ p.Media.URL }
+							data-caption={ format.DisplayName(p.Sighting.Species) + " · " + format.Place(p.Sighting.Location) + creditOf(p) }
+						>
+							<img src={ p.Media.URL } alt={ format.DisplayName(p.Sighting.Species) } loading="lazy" decoding="async"/>
+						</button>
+						<a class="masonry__caption" href={ templ.SafeURL(format.SightingURL(p.Sighting)) }>
+							<strong>{ format.DisplayName(p.Sighting.Species) }</strong>
+							<span>{ format.Flag(p.Sighting.Location.CountryCode) } { format.Date(p.Sighting.HappenedAt) }</span>
+						</a>
+					</li>
+				}
+			</ul>
+		}
+		@components.Lightbox()
+	}
+}
+
+// filterForm narrows a page by animal. It submits on change, and the
+// button is there for anyone without JavaScript.
+templ filterForm(action string, filter Filter) {
+	<form class="filter" method="get" action={ templ.SafeURL(action) } data-autosubmit>
+		<label for="animal">Animal</label>
+		<select id="animal" name="animal">
+			<option value="">All animals</option>
+			for _, a := range species.Animals() {
+				<option
+					value={ a.String() }
+					if a == filter.Animal {
+						selected
+					}
+				>{ a.Name() }</option>
+			}
+		</select>
+		if filter.Country != "" {
+			<input type="hidden" name="country" value={ filter.Country.String() }/>
+		}
+		<button type="submit" class="button button--small">Show</button>
+	</form>
+}
+
+func creditOf(p Photo) string {
+	if p.Media.Creator == "" {
+		return ""
+	}
+	return " · © " + p.Media.Creator
+}
