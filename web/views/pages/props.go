@@ -29,15 +29,24 @@ type (
 		Count     int
 		Species   int
 	}
-	// Point is a sighting as the map and globe plot it.
+	// Point is a sighting as the map and globe plot it. The fields after
+	// Group fill the globe's hologram when a point is clicked.
 	Point struct {
-		ID    string  `json:"id"`
-		Lat   float64 `json:"lat"`
-		Lng   float64 `json:"lng"`
-		Name  string  `json:"name"`
-		Date  string  `json:"date"`
-		Place string  `json:"place"`
-		Group string  `json:"group"`
+		ID          string  `json:"id"`
+		Lat         float64 `json:"lat"`
+		Lng         float64 `json:"lng"`
+		Name        string  `json:"name"`
+		Date        string  `json:"date"`
+		Place       string  `json:"place"`
+		Group       string  `json:"group"`
+		Scientific  string  `json:"scientific,omitzero"`
+		Family      string  `json:"family,omitzero"`
+		Status      string  `json:"status,omitzero"`
+		StatusLabel string  `json:"statusLabel,omitzero"`
+		Photo       string  `json:"photo,omitzero"`
+		Flag        string  `json:"flag,omitzero"`
+		Weather     string  `json:"weather,omitzero"`
+		Temperature string  `json:"temperature,omitzero"`
 	}
 	// Photo is a photo in the gallery, with the sighting it shows.
 	Photo struct {

@@ -47,12 +47,20 @@ func Home(sightings []sighting.Sighting) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<section class=\"hero\"><div class=\"hero__text\"><div class=\"colour-bars\" aria-hidden=\"true\"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div><p class=\"eyebrow\">Now showing · Live from the wild</p><h1>Every animal, everywhere it's been seen.</h1><p class=\"lede\">Lions in the Mara, humpbacks off Cape Town, penguins on the ice. Each sighting is a real record, with the weather in the hour it happened.</p><div class=\"hero__actions\"><a class=\"button\" href=\"/map\">Explore the map</a> <a class=\"button button--ghost\" href=\"/stats\">See the numbers</a></div></div><div class=\"globe\" aria-hidden=\"true\"><canvas class=\"globe__canvas\" data-globe=\"/api/points\"></canvas><p class=\"globe__hint\">Drag to spin</p></div></section><section aria-labelledby=\"latest\"><div class=\"section-head\"><h2 id=\"latest\">Latest sightings</h2><a href=\"/gallery\">Browse the gallery →</a></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<section class=\"hero\"><div class=\"hero__text\"><div class=\"colour-bars\" aria-hidden=\"true\"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div><p class=\"eyebrow\">Now showing · Live from the wild</p><h1>Every animal, everywhere it's been seen.</h1><p class=\"lede\">Lions in the Mara, humpbacks off Cape Town, penguins on the ice. Each sighting is a real record, with the weather in the hour it happened.</p><div class=\"hero__actions\"><a class=\"button\" href=\"/map\">Explore the map</a> <a class=\"button button--ghost\" href=\"/stats\">See the numbers</a></div></div><div class=\"globe\"><canvas class=\"globe__canvas\" data-globe=\"/api/points\" aria-hidden=\"true\"></canvas><p class=\"globe__hint\" aria-hidden=\"true\">Drag to spin · Click a point</p>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = hologram().Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</div></section><section aria-labelledby=\"latest\"><div class=\"section-head\"><h2 id=\"latest\">Latest sightings</h2><a href=\"/gallery\">Browse the gallery →</a></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			if len(sightings) == 0 {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<p class=\"empty\">No sightings have been ingested yet. Run <code>go run . db seed</code> to fetch some.</p>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<p class=\"empty\">No sightings have been ingested yet. Run <code>go run . db seed</code> to fetch some.</p>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -62,7 +70,7 @@ func Home(sightings []sighting.Sighting) templ.Component {
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</section>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</section>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -73,6 +81,37 @@ func Home(sightings []sighting.Sighting) templ.Component {
 			Description: "Wildlife sightings from around the world, with the weather at the time.",
 			Active:      "Sightings",
 		}).Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		return nil
+	})
+}
+
+// hologram is the panel the globe projects above a sighting when its
+// point is clicked. app.js fills it in and shows it.
+func hologram() templ.Component {
+	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
+			return templ_7745c5c3_CtxErr
+		}
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+		if !templ_7745c5c3_IsBuffer {
+			defer func() {
+				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err == nil {
+					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+				}
+			}()
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var3 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var3 == nil {
+			templ_7745c5c3_Var3 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<div class=\"hologram\" data-hologram role=\"dialog\" aria-label=\"Sighting details\" hidden><div class=\"hologram__panel\"><button class=\"hologram__close\" type=\"button\" aria-label=\"Close\" data-hologram-close>×</button><p class=\"hologram__group\" data-holo=\"group\"></p><div class=\"hologram__head\"><div class=\"hologram__photo\" data-holo=\"photo\"><img alt=\"\" loading=\"lazy\"></div><div><h3 class=\"hologram__name\" data-holo=\"name\"></h3><p class=\"hologram__sci\" data-holo=\"scientific\"></p></div></div><dl class=\"hologram__facts\"><div><dt>Where</dt><dd data-holo=\"place\"></dd></div><div><dt>Seen</dt><dd data-holo=\"date\"></dd></div><div data-holo-row=\"weather\"><dt>Weather</dt><dd data-holo=\"weather\"></dd></div><div data-holo-row=\"status\"><dt>Red List</dt><dd data-holo=\"status\"></dd></div></dl><a class=\"hologram__link\" data-holo=\"link\" href=\"/\">See the sighting →</a></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

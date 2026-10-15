@@ -1,10 +1,12 @@
 package handlers
 
 import (
+	"cmp"
 	"log/slog"
 	"math"
 	"net/http"
 	"workshop/internal/common/httputil"
+	"workshop/internal/domain/species"
 	"workshop/web/views/format"
 	"workshop/web/views/pages"
 )
@@ -49,6 +51,21 @@ func Points(logger *slog.Logger, sightings SightingsLister) http.HandlerFunc {
 				Date:  s.HappenedAt.Format("2 Jan 2006"),
 				Place: format.Place(s.Location),
 				Group: format.Group(s.Species),
+			}
+			// The rest is for the globe's hologram.
+			p := &points[i]
+			p.Scientific = cmp.Or(s.Species.CanonicalName, s.Species.ScientificName)
+			p.Family = s.Species.Family
+			if c := s.Species.IUCNCategory; c != species.IUCNUnknown {
+				p.Status, p.StatusLabel = c.String(), c.Label()
+			}
+			p.Photo = format.FirstPhoto(s)
+			if s.Location.CountryCode != "" {
+				p.Flag = format.Flag(s.Location.CountryCode)
+			}
+			if c := s.Weather.Condition; c.Description != "" {
+				p.Weather = format.WeatherIcon(c.Code) + " " + c.Description
+				p.Temperature = format.Temperature(s.Weather.Temperature.Actual)
 			}
 		}
 

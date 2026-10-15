@@ -152,6 +152,13 @@ func TestPoints(t *testing.T) {
 	assert.Equal(t, "Lion", points[0]["name"])
 	assert.Equal(t, "Mammals", points[0]["group"])
 	assert.InDelta(t, -1.5, points[0]["lat"], 0.0001)
+	assert.Equal(t, "Panthera leo", points[0]["scientific"])
+	assert.Equal(t, "VU", points[0]["status"])
+	assert.Equal(t, "Vulnerable", points[0]["statusLabel"])
+	assert.Equal(t, "🇰🇪", points[0]["flag"])
+	assert.Equal(t, "🌤️ Mainly clear", points[0]["weather"])
+	assert.Equal(t, "24°C", points[0]["temperature"])
+	assert.NotContains(t, points[0], "photo")
 }
 
 func TestNotFound(t *testing.T) {

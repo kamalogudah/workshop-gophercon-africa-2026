@@ -26,9 +26,10 @@ templ Home(sightings []sighting.Sighting) {
 					<a class="button button--ghost" href="/stats">See the numbers</a>
 				</div>
 			</div>
-			<div class="globe" aria-hidden="true">
-				<canvas class="globe__canvas" data-globe="/api/points"></canvas>
-				<p class="globe__hint">Drag to spin</p>
+			<div class="globe">
+				<canvas class="globe__canvas" data-globe="/api/points" aria-hidden="true"></canvas>
+				<p class="globe__hint" aria-hidden="true">Drag to spin · Click a point</p>
+				@hologram()
 			</div>
 		</section>
 		<section aria-labelledby="latest">
@@ -43,4 +44,29 @@ templ Home(sightings []sighting.Sighting) {
 			}
 		</section>
 	}
+}
+
+// hologram is the panel the globe projects above a sighting when its
+// point is clicked. app.js fills it in and shows it.
+templ hologram() {
+	<div class="hologram" data-hologram role="dialog" aria-label="Sighting details" hidden>
+		<div class="hologram__panel">
+			<button class="hologram__close" type="button" aria-label="Close" data-hologram-close>×</button>
+			<p class="hologram__group" data-holo="group"></p>
+			<div class="hologram__head">
+				<div class="hologram__photo" data-holo="photo"><img alt="" loading="lazy"/></div>
+				<div>
+					<h3 class="hologram__name" data-holo="name"></h3>
+					<p class="hologram__sci" data-holo="scientific"></p>
+				</div>
+			</div>
+			<dl class="hologram__facts">
+				<div><dt>Where</dt><dd data-holo="place"></dd></div>
+				<div><dt>Seen</dt><dd data-holo="date"></dd></div>
+				<div data-holo-row="weather"><dt>Weather</dt><dd data-holo="weather"></dd></div>
+				<div data-holo-row="status"><dt>Red List</dt><dd data-holo="status"></dd></div>
+			</dl>
+			<a class="hologram__link" data-holo="link" href="/">See the sighting →</a>
+		</div>
+	</div>
 }
