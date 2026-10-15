@@ -29,6 +29,39 @@
 	};
 
 	/* ----------------------------------------------------------------------
+	   The television: nav links and knobs change channel through a burst of
+	   static, and the set only powers on once per visit.
+	   ---------------------------------------------------------------------- */
+
+	const television = () => {
+		try {
+			sessionStorage.setItem('tv-on', '1');
+		} catch (e) {}
+
+		const tv = document.querySelector('.tv');
+		const screen = document.querySelector('[data-screen]');
+		if (!tv) return;
+
+		// Focus the screen so the arrow keys and Page Down scroll it.
+		if (screen && !location.hash) screen.focus({ preventScroll: true });
+
+		if (reducedMotion) return;
+
+		document.addEventListener('click', (e) => {
+			const link = e.target.closest('a[data-channel]');
+			if (!link || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+			e.preventDefault();
+			tv.classList.add('is-switching');
+			setTimeout(() => { location.href = link.href; }, 350);
+		});
+
+		// Coming back with the browser's back button shows the cached page, still snowy.
+		window.addEventListener('pageshow', (e) => {
+			if (e.persisted) tv.classList.remove('is-switching');
+		});
+	};
+
+	/* ----------------------------------------------------------------------
 	   3D tilt: cards lean towards the pointer, with a glare that follows it.
 	   ---------------------------------------------------------------------- */
 
@@ -300,6 +333,7 @@
 		requestAnimationFrame(frame);
 	};
 
+	television();
 	tilt();
 	flips();
 	lightbox();

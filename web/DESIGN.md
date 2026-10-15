@@ -1,51 +1,59 @@
-# Design: neon city at night
+# Design: a 70s wooden television
 
-Cyberpunk, dark only. Black streets, matrix-green neon, alert-red warnings.
+The whole site plays on the screen of an old walnut TV set standing in a 70s
+living room. The picture is warm, faded colour on a dark tube. Dark only.
 
-## Colours (`:root` in `assets/css/app.css`)
+## The set (`layout.templ`, "The television" in `assets/css/app.css`)
+
+- `body.room`: striped brown wallpaper with an orange glow behind the set.
+- `.tv__cabinet`: walnut wood grain (`--wood-light`, `--wood`, `--wood-dark`),
+  rounded 28px, with tapered legs (`.tv__legs`) underneath.
+- `.tv__bezel`: dark plastic surround (`--bezel`), curved 44px/52px. Inside it:
+  - `.tv__screen`: the page itself. It scrolls on its own; the window doesn't.
+  - `.tv__glass`: scanlines, dark curved edges, a reflection and a rolling band.
+  - `.tv__static`: snow, shown on power-on and when changing channel.
+  - `.tv__osd`: green channel number ("CH 02") top right, fades after 3s.
+- `.tv__panel` (right side; under the screen on phones): "Wildvision" chrome
+  plate, two chrome knobs, speaker grille, orange power light.
+
+## Channels (`views/layout/channels.go`)
+
+The nav pages are channels 1–6, in `channels`. The nav shows each number in
+green. The **Channel** knob links to the next one, **Back** to the previous;
+the channel knob is turned one notch (60°) per channel via `.tv--ch-N`.
+Links with `data-channel` show a burst of static before going (`app.js`).
+The set powers on (line → full picture) once per browser tab; after that
+pages arrive with static clearing (`tv-warm`, set from `sessionStorage`).
+
+## Colours (`:root`)
 
 | Token | Hex | Use |
 |---|---|---|
-| `--bg` | `#000000` | page |
-| `--surface` / `--surface-2` | `#0C130E` / `#121C15` | panels, cards |
-| `--text` | `#E0E0E0` | body text |
-| `--muted` | `#94A3B8` | labels, secondary text |
-| `--line` | `#1F3326` | borders |
-| `--accent` | `#00FF41` | matrix green: links, primary button, glow, active nav |
-| `--accent-2` | `#FF3333` | alert red: eyebrow, ghost button, `//` section prefix, horizon |
-| `--glow` / `--glow-red` | | text/box glow for each accent |
+| `--bg` | `#1E1611` | the tube |
+| `--surface` / `--surface-2` | `#2A2019` / `#33281F` | panels, cards |
+| `--text` | `#F2E3C6` | cream text |
+| `--muted` | `#C2AD8C` | secondary text |
+| `--line` | `#4D3B2C` | borders |
+| `--accent` | `#E8894A` | burnt orange: links, buttons, knob pointers |
+| `--accent-2` | `#D9A93B` | mustard: eyebrow, ghost button, hover |
+| `--teal` | `#6FB3A8` | faded teal |
+| `--osd` | `#A8F07C` | on-screen channel numbers |
 
-Animal groups: mammals green, birds cyan `#00E5FF`, reptiles yellow `#F5F500`,
-sharks red, other grey. IUCN badge colours stay the official Red List ones.
+Animal groups: mammals orange, birds teal, reptiles mustard, sharks rust
+`#C8553D`, other tan. IUCN badges keep the official Red List colours.
 
 ## Lettering
 
-- Headings: Orbitron 700/900, uppercase, letter-spaced (`--font-display`).
-- Everything else: JetBrains Mono (`--font`). Both from Google Fonts in the layout.
-
-## Shape
-
-- Radii are effectively square (`--radius: 2px`).
-- Buttons have two cut corners (clip-path); card and tile photos have the
-  top-right corner cut (`--cut: 14px`).
+- Headings: Righteous (rounded, 70s), with a slight red/blue colour fringe (`--fringe`).
+- Body: IBM Plex Mono.
+- On-screen text (channel numbers, eyebrow, globe hint): VT323.
 
 ## Effects
 
-- Scanlines over the whole screen, with a faint band rolling down (`body::after`).
-- Grid floor behind the hero, moving towards a red horizon (`.hero__grid`).
-- Glitch title: `.glitch` with a `data-text` copy, red and cyan slices jump
-  every ~5s, plus a skew jolt (`.glitch-jolt`).
-- Panels glow green on hover; card photos get a green scan sweep.
-- Globe: green glowing rim, dots blend additively so busy places glow.
-- Map tiles inverted and tinted green.
-- All animation is switched off under `prefers-reduced-motion`.
-
-## Logo
-
-A green hexagon with a paw inside (red pad), inline SVG in the header and as
-the favicon. The name reads `WILD.SIGHTINGS` with a red dot.
+- Photos are sepia-tinted and slightly washed out.
+- Colour bars test strip above the home page title.
+- Every animation is off under `prefers-reduced-motion`.
 
 ## Avoid
 
-- Light mode.
-- Emoji as icons (photo placeholders say `NO SIGNAL`).
+- Light mode. Neon green, the old cyberpunk look.
