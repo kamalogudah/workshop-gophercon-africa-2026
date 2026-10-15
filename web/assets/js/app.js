@@ -513,6 +513,25 @@
 		};
 
 		holo.querySelector('[data-hologram-close]').addEventListener('click', close);
+
+		// The hologram tilts towards the pointer, and settles back when it
+		// leaves.
+		const panel = holo.querySelector('.hologram__panel');
+		if (!reducedMotion) {
+			panel.addEventListener('pointermove', (e) => {
+				const box = panel.getBoundingClientRect();
+				const x = (e.clientX - box.left) / box.width - 0.5;
+				const y = (e.clientY - box.top) / box.height - 0.5;
+				panel.classList.add('is-tilting');
+				panel.style.setProperty('--holo-ry', `${x * 24}deg`);
+				panel.style.setProperty('--holo-rx', `${-y * 18}deg`);
+			});
+			panel.addEventListener('pointerleave', () => {
+				panel.classList.remove('is-tilting');
+				panel.style.removeProperty('--holo-ry');
+				panel.style.removeProperty('--holo-rx');
+			});
+		}
 		document.addEventListener('keydown', (e) => {
 			if (e.key === 'Escape') close();
 		});

@@ -399,15 +399,42 @@ code {
 }
 
 /* The hologram the globe projects above a clicked sighting. --tone is the
-   colour of the animal's group, set by app.js. */
+   colour of the animal's group, set by app.js.
+
+   It's built in 3D: the panel leans back from its base and sways, a pane
+   of glass with fainter slices behind it for thickness, and its contents
+   float at different depths in front. The pointer tilts it. Anything that
+   flattens a 3D context (overflow, opacity, filter) is kept off the panel
+   itself and put on its layers instead. */
+
+@property --holo-sway {
+	syntax: "<angle>";
+	inherits: false;
+	initial-value: 0deg;
+}
+
+@property --holo-rx {
+	syntax: "<angle>";
+	inherits: false;
+	initial-value: 0deg;
+}
+
+@property --holo-ry {
+	syntax: "<angle>";
+	inherits: false;
+	initial-value: 0deg;
+}
 
 .hologram {
+	--tone: var(--holo);
 	position: absolute;
 	top: 0;
 	left: 50%;
 	z-index: 2;
 	width: min(88%, 320px);
 	translate: -50% 0;
+	perspective: 800px;
+	perspective-origin: 50% 120%;
 	pointer-events: none;
 }
 
@@ -416,49 +443,95 @@ code {
 }
 
 .hologram__panel {
-	--tone: var(--holo);
 	position: relative;
 	padding: 14px 16px 12px;
-	overflow: hidden;
-	border: 1px solid color-mix(in srgb, var(--holo) 70%, transparent);
+	color: var(--holo);
+	text-shadow: 0 0 6px color-mix(in srgb, var(--holo) 60%, transparent);
+	pointer-events: auto;
+	transform-style: preserve-3d;
+	transform-origin: 50% 100%;
+	transform: rotateX(calc(14deg + var(--holo-rx))) rotateY(calc(var(--holo-sway) + var(--holo-ry)));
+	transition: --holo-rx 0.4s ease-out, --holo-ry 0.4s ease-out;
+}
+
+/* While the pointer is on it, it follows without lag. */
+.hologram__panel.is-tilting {
+	transition-duration: 0.08s;
+}
+
+/* The pane of glass, with scanlines rolling down it, and a brighter sweep
+   just in front. */
+.hologram__panel::before,
+.hologram__panel::after {
+	content: "";
+	position: absolute;
+	inset: 0;
 	border-radius: var(--radius-sm);
+	pointer-events: none;
+}
+
+.hologram__panel::before {
+	border: 1px solid color-mix(in srgb, var(--holo) 70%, transparent);
 	background:
+		repeating-linear-gradient(180deg, color-mix(in srgb, var(--holo) 14%, transparent) 0 1px, transparent 1px 3px),
 		linear-gradient(180deg, color-mix(in srgb, var(--holo) 16%, transparent), color-mix(in srgb, var(--holo) 6%, transparent)),
 		color-mix(in srgb, var(--bg) 82%, transparent);
 	box-shadow:
 		0 0 18px color-mix(in srgb, var(--holo) 35%, transparent),
 		inset 0 0 24px color-mix(in srgb, var(--holo) 18%, transparent);
 	backdrop-filter: blur(6px);
-	color: var(--holo);
-	text-shadow: 0 0 6px color-mix(in srgb, var(--holo) 60%, transparent);
-	pointer-events: auto;
-	transform-origin: 50% 100%;
-}
-
-/* Scanlines that roll down the projection, and a brighter sweep. */
-.hologram__panel::before,
-.hologram__panel::after {
-	content: "";
-	position: absolute;
-	inset: 0;
-	pointer-events: none;
-}
-
-.hologram__panel::before {
-	background: repeating-linear-gradient(180deg, color-mix(in srgb, var(--holo) 14%, transparent) 0 1px, transparent 1px 3px);
 	animation: holo-scan 6s linear infinite;
 }
 
 .hologram__panel::after {
-	height: 30%;
-	background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--holo) 22%, transparent), transparent);
+	background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--holo) 22%, transparent), transparent) no-repeat;
+	background-size: 100% 30%;
+	transform: translateZ(1px);
 	animation: holo-sweep 3.2s ease-in-out infinite;
 }
+
+/* Fainter slices of the pane behind it, so it has some thickness. */
+.hologram__depth,
+.hologram__depth::before {
+	position: absolute;
+	inset: 0;
+	border: 1px solid color-mix(in srgb, var(--holo) 30%, transparent);
+	border-radius: var(--radius-sm);
+	background: color-mix(in srgb, var(--holo) 5%, transparent);
+	box-shadow: 0 0 14px color-mix(in srgb, var(--holo) 20%, transparent);
+	pointer-events: none;
+}
+
+.hologram__depth {
+	transform-style: preserve-3d;
+	transform: translateZ(-24px);
+}
+
+.hologram__depth::before {
+	content: "";
+	transform: translateZ(12px);
+}
+
+/* The contents float in front of the glass, nearest first: the photo,
+   the name, the close button, the link, the group and the facts. */
+.hologram__close { transform: translateZ(30px); }
+.hologram__group { transform: translateZ(20px); }
+.hologram__head { transform: translateZ(32px); transform-style: preserve-3d; }
+.hologram__photo { transform: translateZ(18px); }
+.hologram__facts { transform: translateZ(14px); }
+.hologram__link { transform: translateZ(24px); }
 
 .hologram.is-open .hologram__panel {
 	animation:
 		holo-project 0.55s cubic-bezier(0.2, 0.9, 0.3, 1.2) both,
+		holo-sway 9s 0.6s ease-in-out infinite,
 		holo-flicker 5s 0.6s steps(1) infinite;
+}
+
+.hologram.is-open .hologram__panel::before {
+	animation:
+		holo-scan 6s linear infinite,
+		holo-dim 5s 0.6s steps(1) infinite;
 }
 
 .hologram.is-open .hologram__panel > * {
@@ -586,10 +659,18 @@ code {
 	color: var(--holo);
 }
 
+/* Scale only: opacity or a filter here would flatten the 3D layers. */
 @keyframes holo-project {
-	0% { opacity: 0; transform: scale(0.1, 0.02); filter: brightness(3); }
-	40% { opacity: 1; transform: scale(1, 0.04); }
-	100% { opacity: 1; transform: none; filter: none; }
+	0% { scale: 0.1 0.02; }
+	40% { scale: 1 0.04; }
+	100% { scale: 1; }
+}
+
+/* Ends where it starts, so reduced motion leaves it facing forward. */
+@keyframes holo-sway {
+	0%, 100% { --holo-sway: 0deg; }
+	25% { --holo-sway: 9deg; }
+	75% { --holo-sway: -9deg; }
 }
 
 @keyframes holo-in {
@@ -598,20 +679,27 @@ code {
 }
 
 @keyframes holo-scan {
-	to { background-position: 0 30px; }
+	to { background-position: 0 30px, 0 0, 0 0; }
 }
 
 @keyframes holo-sweep {
-	from { translate: 0 -100%; }
-	to { translate: 0 400%; }
+	from { background-position: 0 -50%; }
+	to { background-position: 0 150%; }
 }
 
 /* A glitch, now and then. */
 @keyframes holo-flicker {
-	0%, 100% { opacity: 1; translate: 0 0; }
-	91% { opacity: 0.6; translate: 2px 0; }
-	92% { opacity: 1; translate: -1px 0; }
-	93% { opacity: 0.8; translate: 0 0; }
+	0%, 100% { translate: 0 0; }
+	91% { translate: 2px 0; }
+	92% { translate: -1px 0; }
+	93% { translate: 0 0; }
+}
+
+@keyframes holo-dim {
+	0%, 100% { opacity: 1; }
+	91% { opacity: 0.6; }
+	92% { opacity: 1; }
+	93% { opacity: 0.8; }
 }
 
 /* ==========================================================================
